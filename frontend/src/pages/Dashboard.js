@@ -5,6 +5,7 @@ import JobSeekerDashboard from '../components/JobSeekerDashboard';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
+import AvatarDisplay from '../components/AvatarDisplay';
 
 function Dashboard() {
   const { user, logout } = useContext(AuthContext);
@@ -27,9 +28,12 @@ function Dashboard() {
           <div className="flex items-center gap-4">
             <DarkModeToggle />
             <NotificationBell />
-            <span className="text-gray-700 dark:text-gray-300">
-              <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <AvatarDisplay avatarId={user.avatar} size="sm" />
+              <span className="text-gray-700 dark:text-gray-300">
+                <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
+              </span>
+            </div>
             <button 
               onClick={() => navigate('/')} 
               className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"

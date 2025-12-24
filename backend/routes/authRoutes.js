@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { authenticateToken } = require('../middleware/auth');
 
 // We'll pass supabase from server.js
 module.exports = (supabase) => {
@@ -35,7 +36,8 @@ module.exports = (supabase) => {
             full_name,
             user_type,
             phone: phone || null,
-            company_name: company_name || null
+            company_name: company_name || null,
+            avatar: null
           }
         ])
         .select()
@@ -57,7 +59,8 @@ module.exports = (supabase) => {
           id: data.id,
           email: data.email,
           full_name: data.full_name,
-          user_type: data.user_type
+          user_type: data.user_type,
+          avatar: data.avatar
         }
       });
 
@@ -102,7 +105,39 @@ module.exports = (supabase) => {
           id: user.id,
           email: user.email,
           full_name: user.full_name,
-          user_type: user.user_type
+          user_type: user.user_type,
+          avatar: user.avatar
+        }
+      });
+
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update user avatar
+  router.put('/update-avatar', authenticateToken, async (req, res) => {
+    try {
+      const { avatar } = req.body;
+
+      const { data, error } = await supabase
+        .from('users')
+        .update({ avatar })
+        .eq('id', req.user.userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update localStorage on client side
+      res.json({
+        message: 'Avatar updated successfully',
+        user: {
+          id: data.id,
+          email: data.email,
+          full_name: data.full_name,
+          user_type: data.user_type,
+          avatar: data.avatar
         }
       });
 

@@ -4,12 +4,15 @@ import { AuthContext } from '../context/AuthContext';
 import { getMyProfile, saveProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
+import AvatarSelector from '../components/AvatarSelector';
+import AvatarDisplay from '../components/AvatarDisplay';
 
 function Profile() {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, updateAvatar } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || null);
   
   const [profile, setProfile] = useState({
     bio: '',
@@ -65,6 +68,12 @@ function Profile() {
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
+      // Update avatar if changed
+      if (selectedAvatar !== user.avatar) {
+        await updateAvatar(selectedAvatar);
+      }
+      
+      // Save profile
       await saveProfile(profile);
       alert('Profile saved successfully!');
     } catch (error) {
@@ -163,6 +172,12 @@ function Profile() {
             {saving ? 'Saving...' : 'Save Profile'}
           </button>
         </div>
+
+        {/* Avatar Selection */}
+        <AvatarSelector 
+          currentAvatar={selectedAvatar} 
+          onSelect={setSelectedAvatar}
+        />
 
         {/* Basic Info */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
