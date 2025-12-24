@@ -1,0 +1,396 @@
+import React, { useState, useEffect, useContext } from 'react';
+import { getMyJobs, createJob, deleteJob, getJobApplications, updateApplicationStatus } from '../services/api'; import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+function RecruiterDashboard() {
+    const [jobs, setJobs] = useState([]);
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const [newJob, setNewJob] = useState({
+        title: '',
+        description: '',
+        company: user?.company_name || '',
+        location: '',
+        job_type: 'Full-time',
+        salary_range: '',
+        requirements: ''
+    });
+
+    useEffect(() => {
+        fetchMyJobs();
+    }, []);
+
+    const fetchMyJobs = async () => {
+        try {
+            const response = await getMyJobs();
+            setJobs(response.data.jobs);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+            setLoading(false);
+        }
+    };
+
+    const handleCreateJob = async (e) => {
+        e.preventDefault();
+        try {
+            await createJob(newJob);
+            setShowCreateForm(false);
+            setNewJob({
+                title: '',
+                description: '',
+                company: user?.company_name || '',
+                location: '',
+                job_type: 'Full-time',
+                salary_range: '',
+                requirements: ''
+            });
+            fetchMyJobs();
+            alert('Job posted successfully!');
+        } catch (error) {
+            alert('Error creating job: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    const handleDeleteJob = async (jobId) => {
+        if (window.confirm('Are you sure you want to delete this job?')) {
+            try {
+                await deleteJob(jobId);
+                fetchMyJobs();
+                alert('Job deleted successfully!');
+            } catch (error) {
+                alert('Error deleting job: ' + (error.response?.data?.error || error.message));
+            }
+        }
+    };
+
+    const viewApplications = async (job) => {
+        setSelectedJob(job);
+        try {
+            const response = await getJobApplications(job.id);
+            setApplications(response.data.applications);
+        } catch (error) {
+            console.error('Error fetching applications:', error);
+            alert('Error loading applications');
+        }
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-800">My Job Posts</h1>
+                <button
+                    onClick={() => setShowCreateForm(!showCreateForm)}
+                    className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition font-semibold"
+                >
+                    {showCreateForm ? 'Cancel' : '+ Post New Job'}
+                </button>
+            </div>
+
+            {/* Create Job Form */}
+            {showCreateForm && (
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 className="text-2xl font-bold mb-4">Create New Job</h2>
+                    <form onSubmit={handleCreateJob}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Job Title *</label>
+                                <input
+                                    type="text"
+                                    value={newJob.title}
+                                    onChange={(e) => setNewJob({ ...newJob, title: e.target.value })}
+                                    required
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="e.g. Senior Developer"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Company *</label>
+                                <input
+                                    type="text"
+                                    value={newJob.company}
+                                    onChange={(e) => setNewJob({ ...newJob, company: e.target.value })}
+                                    required
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Location *</label>
+                                <input
+                                    type="text"
+                                    value={newJob.location}
+                                    onChange={(e) => setNewJob({ ...newJob, location: e.target.value })}
+                                    required
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="e.g. Remote, New York"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Job Type *</label>
+                                <select
+                                    value={newJob.job_type}
+                                    onChange={(e) => setNewJob({ ...newJob, job_type: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
+                                    <option>Full-time</option>
+                                    <option>Part-time</option>
+                                    <option>Contract</option>
+                                    <option>Remote</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 font-semibold mb-2">Salary Range</label>
+                                <input
+                                    type="text"
+                                    value={newJob.salary_range}
+                                    onChange={(e) => setNewJob({ ...newJob, salary_range: e.target.value })}
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    placeholder="e.g. $80k - $120k"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <label className="block text-gray-700 font-semibold mb-2">Job Description *</label>
+                            <textarea
+                                value={newJob.description}
+                                onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
+                                required
+                                rows="4"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="Describe the role..."
+                            />
+                        </div>
+
+                        <div className="mt-4">
+                            <label className="block text-gray-700 font-semibold mb-2">Requirements *</label>
+                            <textarea
+                                value={newJob.requirements}
+                                onChange={(e) => setNewJob({ ...newJob, requirements: e.target.value })}
+                                required
+                                rows="3"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="List requirements..."
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="mt-4 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-green-600 transition font-semibold"
+                        >
+                            Post Job
+                        </button>
+                    </form>
+                </div>
+            )}
+
+            {/* Jobs List */}
+            {loading ? (
+                <p>Loading your jobs...</p>
+            ) : jobs.length === 0 ? (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                    <p className="text-gray-600">You haven't posted any jobs yet.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-6">
+                    {jobs.map((job) => (
+                        <div key={job.id} className="bg-white rounded-lg shadow-md p-6">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h3 className="text-2xl font-bold text-gray-800">{job.title}</h3>
+                                    <p className="text-primary font-semibold">{job.company}</p>
+                                    <p className="text-gray-600">📍 {job.location} • {job.job_type}</p>
+                                    {job.salary_range && <p className="text-secondary">💰 {job.salary_range}</p>}
+                                    <p className="text-gray-700 mt-3">{job.description}</p>
+                                    <p className="text-sm text-gray-500 mt-2">Posted: {new Date(job.created_at).toLocaleDateString()}</p>
+                                </div>
+                                <div className="flex flex-col gap-2 ml-4">
+                                    <button
+                                        onClick={() => viewApplications(job)}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm"
+                                    >
+                                        View Applications
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteJob(job.id)}
+                                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Applications Modal */}
+            {selectedJob && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold">Applications for: {selectedJob.title}</h2>
+                            <button
+                                onClick={() => setSelectedJob(null)}
+                                className="text-gray-500 hover:text-gray-700 text-2xl"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {applications.length === 0 ? (
+                            <p className="text-gray-600">No applications yet.</p>
+                        ) : (
+                            <div className="space-y-4">
+                                {applications.map((app) => (
+                                    <div key={app.id} className="border rounded-lg p-4">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h3 className="font-bold text-lg">{app.users?.full_name}</h3>
+                                                <p className="text-gray-600">{app.users?.email}</p>
+                                                {app.users?.phone && <p className="text-gray-600">📞 {app.users.phone}</p>}
+                                                <button
+                                                    onClick={() => navigate(`/view-profile/${app.candidate_id}`)}
+                                                    className="mt-2 text-primary hover:underline font-semibold text-sm"
+                                                >
+                                                    👤 View Full Profile
+                                                </button>
+                                            </div>
+                                            <StatusDropdown
+                                                applicationId={app.id}
+                                                currentStatus={app.status}
+                                                onStatusChange={() => viewApplications(selectedJob)}
+                                            />
+                                        </div>
+
+                                        {app.cover_letter && (
+                                            <div className="mt-2">
+                                                <p className="font-semibold">Cover Letter:</p>
+                                                <p className="text-gray-700">{app.cover_letter}</p>
+                                            </div>
+                                        )}
+                                        {app.resume_url && (
+                                            <a
+                                                href={app.resume_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary hover:underline mt-2 inline-block"
+                                            >
+                                                📄 View Resume
+                                            </a>
+                                        )}
+                                        <p className="text-sm text-gray-500 mt-2">Applied: {new Date(app.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+// Status Dropdown Component
+function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
+    const [status, setStatus] = useState(currentStatus);
+    const [notes, setNotes] = useState('');
+    const [showNotesModal, setShowNotesModal] = useState(false);
+    const [updating, setUpdating] = useState(false);
+
+    const handleStatusChange = async (newStatus) => {
+        if (newStatus === currentStatus) return;
+
+        setStatus(newStatus);
+        setShowNotesModal(true);
+    };
+
+    const submitStatusUpdate = async () => {
+        setUpdating(true);
+        try {
+            await updateApplicationStatus(applicationId, { status, notes });
+            alert('Application status updated successfully!');
+            setShowNotesModal(false);
+            setNotes('');
+            onStatusChange();
+        } catch (error) {
+            alert('Error updating status: ' + (error.response?.data?.error || error.message));
+            setStatus(currentStatus);
+        }
+        setUpdating(false);
+    };
+
+    const getStatusColor = (s) => {
+        switch (s) {
+            case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+            case 'reviewed': return 'bg-blue-100 text-blue-800 border-blue-300';
+            case 'accepted': return 'bg-green-100 text-green-800 border-green-300';
+            case 'rejected': return 'bg-red-100 text-red-800 border-red-300';
+            default: return 'bg-gray-100 text-gray-800 border-gray-300';
+        }
+    };
+
+    return (
+        <>
+            <select
+                value={status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                className={`px-3 py-1 rounded-full text-sm font-semibold border-2 ${getStatusColor(status)} focus:outline-none focus:ring-2 focus:ring-primary`}
+            >
+                <option value="pending">Pending</option>
+                <option value="reviewed">Reviewed</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+            {/* Notes Modal */}
+            {showNotesModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                        <h3 className="text-xl font-bold mb-4">Update Application Status</h3>
+                        <p className="text-gray-700 mb-4">
+                            Changing status to: <span className="font-semibold capitalize">{status}</span>
+                        </p>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                            Add notes for the candidate (optional):
+                        </label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            rows="4"
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="Any feedback or next steps..."
+                        />
+                        <div className="flex gap-4 mt-4">
+                            <button
+                                onClick={submitStatusUpdate}
+                                disabled={updating}
+                                className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                            >
+                                {updating ? 'Updating...' : 'Confirm'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowNotesModal(false);
+                                    setStatus(currentStatus);
+                                    setNotes('');
+                                }}
+                                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+export default RecruiterDashboard;
