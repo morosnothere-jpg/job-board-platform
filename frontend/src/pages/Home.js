@@ -132,6 +132,9 @@ function Home() {
     }
   };
 
+  const userTypeDisplay = user ? (user.user_type === 'recruiter' ? '[Recruiter]' : '[Freelancer]') : '';
+  const firstName = user ? user.full_name.split(' ')[0] : '';
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation Bar */}
@@ -153,7 +156,9 @@ function Home() {
                   </button>
                 )}
                 <NotificationBell />
-                <span className="text-gray-700 dark:text-gray-300">Welcome, <span className="font-semibold">{user.full_name}</span></span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
+                </span>
                 <button 
                   onClick={() => navigate('/dashboard')} 
                   className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"

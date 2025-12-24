@@ -15,6 +15,9 @@ function Dashboard() {
     return null;
   }
 
+  const userTypeDisplay = user.user_type === 'recruiter' ? '[Recruiter]' : '[Freelancer]';
+  const firstName = user.full_name.split(' ')[0];
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Top Navigation */}
@@ -25,7 +28,7 @@ function Dashboard() {
             <DarkModeToggle />
             <NotificationBell />
             <span className="text-gray-700 dark:text-gray-300">
-              {user.full_name} <span className="text-sm text-gray-500 dark:text-gray-400">({user.user_type})</span>
+              <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
             </span>
             <button 
               onClick={() => navigate('/')} 

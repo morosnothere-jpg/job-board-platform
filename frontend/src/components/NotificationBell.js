@@ -77,7 +77,7 @@ function NotificationBell() {
       {/* Notification Bell Button */}
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 text-gray-600 hover:text-primary transition"
+        className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-blue-400 transition"
       >
         <svg 
           className="w-6 h-6" 
@@ -111,14 +111,14 @@ function NotificationBell() {
           />
           
           {/* Dropdown Content */}
-          <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-2xl z-20 max-h-[500px] overflow-hidden flex flex-col">
+          <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl z-20 max-h-[500px] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700 transition-colors">
             {/* Header */}
-            <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="font-bold text-gray-800">Notifications</h3>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h3 className="font-bold text-gray-800 dark:text-gray-100">Notifications</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary dark:text-blue-400 hover:underline"
                 >
                   Mark all as read
                 </button>
@@ -128,7 +128,7 @@ function NotificationBell() {
             {/* Notifications List */}
             <div className="overflow-y-auto flex-1">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                   <p>No notifications yet</p>
                 </div>
               ) : (
@@ -136,21 +136,21 @@ function NotificationBell() {
                   <div
                     key={notif.id}
                     onClick={() => handleMarkAsRead(notif.id, notif.link)}
-                    className={`p-4 border-b hover:bg-gray-50 cursor-pointer transition ${
-                      !notif.read ? 'bg-blue-50' : ''
+                    className={`p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition ${
+                      !notif.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">{getNotificationIcon(notif.type)}</span>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <h4 className="font-semibold text-gray-800">{notif.title}</h4>
+                          <h4 className="font-semibold text-gray-800 dark:text-gray-100">{notif.title}</h4>
                           {!notif.read && (
                             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
-                        <p className="text-xs text-gray-400 mt-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{notif.message}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                           {formatTimeAgo(notif.created_at)}
                         </p>
                       </div>
@@ -162,13 +162,13 @@ function NotificationBell() {
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="p-3 border-t bg-gray-50 text-center">
+              <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-center">
                 <button
                   onClick={() => {
                     setShowDropdown(false);
                     navigate('/dashboard');
                   }}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary dark:text-blue-400 hover:underline"
                 >
                   View all in dashboard
                 </button>

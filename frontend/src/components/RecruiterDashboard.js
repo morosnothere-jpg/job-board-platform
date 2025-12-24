@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { getMyJobs, createJob, deleteJob, getJobApplications, updateApplicationStatus } from '../services/api'; import { AuthContext } from '../context/AuthContext';
+import { getMyJobs, createJob, deleteJob, getJobApplications, updateApplicationStatus } from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+
 function RecruiterDashboard() {
     const [jobs, setJobs] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -82,10 +84,10 @@ function RecruiterDashboard() {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-800">My Job Posts</h1>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">My Job Posts</h1>
                 <button
                     onClick={() => setShowCreateForm(!showCreateForm)}
-                    className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-600 transition font-semibold"
+                    className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
                 >
                     {showCreateForm ? 'Cancel' : '+ Post New Job'}
                 </button>
@@ -93,51 +95,51 @@ function RecruiterDashboard() {
 
             {/* Create Job Form */}
             {showCreateForm && (
-                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h2 className="text-2xl font-bold mb-4">Create New Job</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
+                    <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Create New Job</h2>
                     <form onSubmit={handleCreateJob}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Job Title *</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Job Title *</label>
                                 <input
                                     type="text"
                                     value={newJob.title}
                                     onChange={(e) => setNewJob({ ...newJob, title: e.target.value })}
                                     required
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                     placeholder="e.g. Senior Developer"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Company *</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Company *</label>
                                 <input
                                     type="text"
                                     value={newJob.company}
                                     onChange={(e) => setNewJob({ ...newJob, company: e.target.value })}
                                     required
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Location *</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Location *</label>
                                 <input
                                     type="text"
                                     value={newJob.location}
                                     onChange={(e) => setNewJob({ ...newJob, location: e.target.value })}
                                     required
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                     placeholder="e.g. Remote, New York"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Job Type *</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Job Type *</label>
                                 <select
                                     value={newJob.job_type}
                                     onChange={(e) => setNewJob({ ...newJob, job_type: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 >
                                     <option>Full-time</option>
                                     <option>Part-time</option>
@@ -147,44 +149,44 @@ function RecruiterDashboard() {
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Salary Range</label>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Salary Range</label>
                                 <input
                                     type="text"
                                     value={newJob.salary_range}
                                     onChange={(e) => setNewJob({ ...newJob, salary_range: e.target.value })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                     placeholder="e.g. $80k - $120k"
                                 />
                             </div>
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-gray-700 font-semibold mb-2">Job Description *</label>
+                            <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Job Description *</label>
                             <textarea
                                 value={newJob.description}
                                 onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
                                 required
                                 rows="4"
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 placeholder="Describe the role..."
                             />
                         </div>
 
                         <div className="mt-4">
-                            <label className="block text-gray-700 font-semibold mb-2">Requirements *</label>
+                            <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Requirements *</label>
                             <textarea
                                 value={newJob.requirements}
                                 onChange={(e) => setNewJob({ ...newJob, requirements: e.target.value })}
                                 required
                                 rows="3"
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 placeholder="List requirements..."
                             />
                         </div>
 
                         <button
                             type="submit"
-                            className="mt-4 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-green-600 transition font-semibold"
+                            className="mt-4 px-6 py-3 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition font-semibold"
                         >
                             Post Job
                         </button>
@@ -194,34 +196,34 @@ function RecruiterDashboard() {
 
             {/* Jobs List */}
             {loading ? (
-                <p>Loading your jobs...</p>
+                <p className="text-gray-600 dark:text-gray-400">Loading your jobs...</p>
             ) : jobs.length === 0 ? (
-                <div className="bg-white rounded-lg shadow p-8 text-center">
-                    <p className="text-gray-600">You haven't posted any jobs yet.</p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center transition-colors">
+                    <p className="text-gray-600 dark:text-gray-400">You haven't posted any jobs yet.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {jobs.map((job) => (
-                        <div key={job.id} className="bg-white rounded-lg shadow-md p-6">
+                        <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                    <h3 className="text-2xl font-bold text-gray-800">{job.title}</h3>
-                                    <p className="text-primary font-semibold">{job.company}</p>
-                                    <p className="text-gray-600">📍 {job.location} • {job.job_type}</p>
-                                    {job.salary_range && <p className="text-secondary">💰 {job.salary_range}</p>}
-                                    <p className="text-gray-700 mt-3">{job.description}</p>
-                                    <p className="text-sm text-gray-500 mt-2">Posted: {new Date(job.created_at).toLocaleDateString()}</p>
+                                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{job.title}</h3>
+                                    <p className="text-primary dark:text-blue-400 font-semibold">{job.company}</p>
+                                    <p className="text-gray-600 dark:text-gray-400">📍 {job.location} • {job.job_type}</p>
+                                    {job.salary_range && <p className="text-secondary dark:text-green-400">💰 {job.salary_range}</p>}
+                                    <p className="text-gray-700 dark:text-gray-300 mt-3">{job.description}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Posted: {new Date(job.created_at).toLocaleDateString()}</p>
                                 </div>
                                 <div className="flex flex-col gap-2 ml-4">
                                     <button
                                         onClick={() => viewApplications(job)}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm"
+                                        className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition text-sm"
                                     >
                                         View Applications
                                     </button>
                                     <button
                                         onClick={() => handleDeleteJob(job.id)}
-                                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
+                                        className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition text-sm"
                                     >
                                         Delete
                                     </button>
@@ -235,31 +237,31 @@ function RecruiterDashboard() {
             {/* Applications Modal */}
             {selectedJob && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 transition-colors">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold">Applications for: {selectedJob.title}</h2>
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Applications for: {selectedJob.title}</h2>
                             <button
                                 onClick={() => setSelectedJob(null)}
-                                className="text-gray-500 hover:text-gray-700 text-2xl"
+                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-2xl"
                             >
                                 ✕
                             </button>
                         </div>
 
                         {applications.length === 0 ? (
-                            <p className="text-gray-600">No applications yet.</p>
+                            <p className="text-gray-600 dark:text-gray-400">No applications yet.</p>
                         ) : (
                             <div className="space-y-4">
                                 {applications.map((app) => (
-                                    <div key={app.id} className="border rounded-lg p-4">
+                                    <div key={app.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-750">
                                         <div className="flex justify-between items-start mb-3">
                                             <div>
-                                                <h3 className="font-bold text-lg">{app.users?.full_name}</h3>
-                                                <p className="text-gray-600">{app.users?.email}</p>
-                                                {app.users?.phone && <p className="text-gray-600">📞 {app.users.phone}</p>}
+                                                <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{app.users?.full_name}</h3>
+                                                <p className="text-gray-600 dark:text-gray-400">{app.users?.email}</p>
+                                                {app.users?.phone && <p className="text-gray-600 dark:text-gray-400">📞 {app.users.phone}</p>}
                                                 <button
                                                     onClick={() => navigate(`/view-profile/${app.candidate_id}`)}
-                                                    className="mt-2 text-primary hover:underline font-semibold text-sm"
+                                                    className="mt-2 text-primary dark:text-blue-400 hover:underline font-semibold text-sm"
                                                 >
                                                     👤 View Full Profile
                                                 </button>
@@ -273,8 +275,8 @@ function RecruiterDashboard() {
 
                                         {app.cover_letter && (
                                             <div className="mt-2">
-                                                <p className="font-semibold">Cover Letter:</p>
-                                                <p className="text-gray-700">{app.cover_letter}</p>
+                                                <p className="font-semibold text-gray-800 dark:text-gray-200">Cover Letter:</p>
+                                                <p className="text-gray-700 dark:text-gray-300">{app.cover_letter}</p>
                                             </div>
                                         )}
                                         {app.resume_url && (
@@ -282,12 +284,12 @@ function RecruiterDashboard() {
                                                 href={app.resume_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-primary hover:underline mt-2 inline-block"
+                                                className="text-primary dark:text-blue-400 hover:underline mt-2 inline-block"
                                             >
                                                 📄 View Resume
                                             </a>
                                         )}
-                                        <p className="text-sm text-gray-500 mt-2">Applied: {new Date(app.created_at).toLocaleDateString()}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Applied: {new Date(app.created_at).toLocaleDateString()}</p>
                                     </div>
                                 ))}
                             </div>
@@ -298,6 +300,7 @@ function RecruiterDashboard() {
         </div>
     );
 }
+
 // Status Dropdown Component
 function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
     const [status, setStatus] = useState(currentStatus);
@@ -329,11 +332,11 @@ function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
 
     const getStatusColor = (s) => {
         switch (s) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-            case 'reviewed': return 'bg-blue-100 text-blue-800 border-blue-300';
-            case 'accepted': return 'bg-green-100 text-green-800 border-green-300';
-            case 'rejected': return 'bg-red-100 text-red-800 border-red-300';
-            default: return 'bg-gray-100 text-gray-800 border-gray-300';
+            case 'pending': return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700';
+            case 'reviewed': return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700';
+            case 'accepted': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700';
+            case 'rejected': return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border-red-300 dark:border-red-700';
+            default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600';
         }
     };
 
@@ -353,26 +356,26 @@ function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
             {/* Notes Modal */}
             {showNotesModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold mb-4">Update Application Status</h3>
-                        <p className="text-gray-700 mb-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 transition-colors">
+                        <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Update Application Status</h3>
+                        <p className="text-gray-700 dark:text-gray-300 mb-4">
                             Changing status to: <span className="font-semibold capitalize">{status}</span>
                         </p>
-                        <label className="block text-gray-700 font-semibold mb-2">
+                        <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
                             Add notes for the candidate (optional):
                         </label>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             rows="4"
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             placeholder="Any feedback or next steps..."
                         />
                         <div className="flex gap-4 mt-4">
                             <button
                                 onClick={submitStatusUpdate}
                                 disabled={updating}
-                                className="flex-1 bg-primary text-white py-2 rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
+                                className="flex-1 bg-primary dark:bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition disabled:opacity-50"
                             >
                                 {updating ? 'Updating...' : 'Confirm'}
                             </button>
@@ -382,7 +385,7 @@ function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
                                     setStatus(currentStatus);
                                     setNotes('');
                                 }}
-                                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                             >
                                 Cancel
                             </button>
@@ -393,4 +396,5 @@ function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
         </>
     );
 }
+
 export default RecruiterDashboard;

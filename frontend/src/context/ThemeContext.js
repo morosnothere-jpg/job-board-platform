@@ -3,19 +3,15 @@ import React, { createContext, useState, useEffect } from 'react';
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    // Check localStorage for saved preference
+  // Initialize dark mode from localStorage or system preference immediately
+  const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('darkMode');
     if (savedTheme !== null) {
-      setDarkMode(savedTheme === 'true');
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setDarkMode(prefersDark);
+      return savedTheme === 'true';
     }
-  }, []);
+    // Check system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   useEffect(() => {
     // Apply dark mode class to html element

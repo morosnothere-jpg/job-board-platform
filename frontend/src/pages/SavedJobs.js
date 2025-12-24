@@ -8,10 +8,13 @@ import DarkModeToggle from '../components/DarkModeToggle';
 function SavedJobs() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) return;
+
     if (!user) {
       navigate('/login');
       return;
@@ -22,7 +25,7 @@ function SavedJobs() {
       return;
     }
     fetchSavedJobs();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchSavedJobs = async () => {
     try {
@@ -48,13 +51,22 @@ function SavedJobs() {
     navigate(`/apply/${jobId}`);
   };
 
-  if (loading) {
+  // Show loading while auth is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors">
         <p className="text-gray-600 dark:text-gray-400">Loading saved jobs...</p>
       </div>
     );
   }
+
+  // Don't render if no user (will redirect)
+  if (!user) {
+    return null;
+  }
+
+  const firstName = user.full_name.split(' ')[0];
+  const userTypeDisplay = user.user_type === 'recruiter' ? '[Recruiter]' : '[Freelancer]';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -67,6 +79,9 @@ function SavedJobs() {
           <div className="flex gap-4 items-center">
             <DarkModeToggle />
             <NotificationBell />
+            <span className="text-gray-700 dark:text-gray-300">
+              <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
+            </span>
             <button onClick={() => navigate('/')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400">
               Browse Jobs
             </button>
@@ -81,17 +96,9 @@ function SavedJobs() {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Saved Jobs</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">Jobs you've bookmarked for later</p>
-          </div>
-          <button 
-            onClick={() => navigate('/')}
-            className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
-          >
-            Browse More Jobs
-          </button>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Saved Jobs</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Jobs you've bookmarked for later</p>
         </div>
 
         {savedJobs.length === 0 ? (
