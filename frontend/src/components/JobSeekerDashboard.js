@@ -35,51 +35,7 @@ function JobSeekerDashboard() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">My Applications</h1>
-        
-        {/* Mobile: Stacked Buttons */}
-        <div className="flex flex-col sm:hidden gap-2">
-          <button 
-            onClick={() => navigate('/saved-jobs')}
-            className="w-full px-6 py-3 bg-yellow-500 dark:bg-yellow-600 text-white rounded-lg hover:bg-yellow-600 dark:hover:bg-yellow-700 transition font-semibold"
-          >
-            🔖 Saved Jobs
-          </button>
-          <button 
-            onClick={() => navigate('/profile')}
-            className="w-full px-6 py-3 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition font-semibold"
-          >
-            Edit Profile
-          </button>
-          <button 
-            onClick={() => navigate('/')}
-            className="w-full px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
-          >
-            Browse More Jobs
-          </button>
-        </div>
-        
-        {/* Desktop: Side by Side Buttons */}
-        <div className="hidden sm:flex gap-4">
-          <button 
-            onClick={() => navigate('/saved-jobs')}
-            className="px-6 py-3 bg-yellow-500 dark:bg-yellow-600 text-white rounded-lg hover:bg-yellow-600 dark:hover:bg-yellow-700 transition font-semibold"
-          >
-            🔖 Saved Jobs
-          </button>
-          <button 
-            onClick={() => navigate('/profile')}
-            className="px-6 py-3 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition font-semibold"
-          >
-            Edit Profile
-          </button>
-          <button 
-            onClick={() => navigate('/')}
-            className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
-          >
-            Browse More Jobs
-          </button>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">My Applications</h1>
       </div>
 
       {loading ? (
@@ -95,8 +51,8 @@ function JobSeekerDashboard() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {applications.map((app) => (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-6">{applications.map((app) => (
             <div key={app.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <div className="flex-1">
@@ -143,6 +99,17 @@ function JobSeekerDashboard() {
             </div>
           ))}
         </div>
+        
+        {/* Browse More Jobs Button - After Applications */}
+        <div className="text-center">
+          <button 
+            onClick={() => navigate('/')}
+            className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
+          >
+            Browse More Jobs
+          </button>
+        </div>
+      </>
       )}
     </div>
   );

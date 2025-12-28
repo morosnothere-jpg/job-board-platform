@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AvatarDisplay from './AvatarDisplay';
 
-function ProfileDropdown({ user, onLogout }) {
+function ProfileDropdown({ user, onLogout, onNavigate }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -29,7 +29,11 @@ function ProfileDropdown({ user, onLogout }) {
 
   const handleNavigation = (path) => {
     setShowDropdown(false);
-    navigate(path);
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      navigate(path);
+    }
   };
 
   const handleLogout = () => {

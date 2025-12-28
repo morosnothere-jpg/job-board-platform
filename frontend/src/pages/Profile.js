@@ -14,6 +14,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const [profile, setProfile] = useState({
     bio: '',
@@ -53,6 +54,42 @@ function Profile() {
     fetchProfile();
   }, [user, navigate]);
 
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Custom navigation handler
+  const handleNavigation = (path) => {
+    if (hasUnsavedChanges) {
+      if (window.confirm('You have unsaved changes. Do you want to leave without saving?')) {
+        setHasUnsavedChanges(false);
+        navigate(path);
+      }
+    } else {
+      navigate(path);
+    }
+  };
+
+  const handleLogoutWithWarning = () => {
+    if (hasUnsavedChanges) {
+      if (window.confirm('You have unsaved changes. Do you want to logout without saving?')) {
+        setHasUnsavedChanges(false);
+        logout();
+      }
+    } else {
+      logout();
+    }
+  };
+
   const fetchProfile = async () => {
     try {
       const response = await getMyProfile();
@@ -76,6 +113,7 @@ function Profile() {
       
       // Save profile
       await saveProfile(profile);
+      setHasUnsavedChanges(false);
       alert('Profile saved successfully!');
     } catch (error) {
       alert('Error saving profile: ' + (error.response?.data?.error || error.message));
@@ -87,44 +125,52 @@ function Profile() {
     if (newSkill.trim()) {
       setProfile({...profile, skills: [...(profile.skills || []), newSkill.trim()]});
       setNewSkill('');
+      setHasUnsavedChanges(true);
     }
   };
 
   const removeSkill = (index) => {
     setProfile({...profile, skills: profile.skills.filter((_, i) => i !== index)});
+    setHasUnsavedChanges(true);
   };
 
   const addExperience = () => {
     if (experienceForm.company && experienceForm.position) {
       setProfile({...profile, experience: [...(profile.experience || []), experienceForm]});
       setExperienceForm({company: '', position: '', start_date: '', end_date: '', description: '', current: false});
+      setHasUnsavedChanges(true);
     }
   };
 
   const removeExperience = (index) => {
     setProfile({...profile, experience: profile.experience.filter((_, i) => i !== index)});
+    setHasUnsavedChanges(true);
   };
 
   const addEducation = () => {
     if (educationForm.institution && educationForm.degree) {
       setProfile({...profile, education: [...(profile.education || []), educationForm]});
       setEducationForm({institution: '', degree: '', field: '', start_date: '', end_date: '', current: false});
+      setHasUnsavedChanges(true);
     }
   };
 
   const removeEducation = (index) => {
     setProfile({...profile, education: profile.education.filter((_, i) => i !== index)});
+    setHasUnsavedChanges(true);
   };
 
   const addPortfolio = () => {
     if (portfolioForm.title && portfolioForm.url) {
       setProfile({...profile, portfolio_links: [...(profile.portfolio_links || []), portfolioForm]});
       setPortfolioForm({title: '', url: '', description: ''});
+      setHasUnsavedChanges(true);
     }
   };
 
   const removePortfolio = (index) => {
     setProfile({...profile, portfolio_links: profile.portfolio_links.filter((_, i) => i !== index)});
+    setHasUnsavedChanges(true);
   };
 
   if (loading) {
@@ -150,7 +196,11 @@ function Profile() {
             <div className="flex gap-3 items-center">
               <DarkModeToggle />
               <NotificationBell />
-              <ProfileDropdown user={user} onLogout={logout} />
+              <ProfileDropdown 
+                user={user} 
+                onLogout={handleLogoutWithWarning}
+                onNavigate={handleNavigation}
+              />
             </div>
           </div>
         </div>
@@ -214,17 +264,6 @@ function Profile() {
                 <option>Not actively looking</option>
               </select>
             </div>
-
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Expected Salary</label>
-              <input
-                type="text"
-                value={profile.expected_salary || ''}
-                onChange={(e) => setProfile({...profile, expected_salary: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="e.g., $80k - $100k"
-              />
-            </div>
           </div>
         </div>
 
@@ -237,20 +276,20 @@ function Profile() {
               type="text"
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               placeholder="Add a skill (e.g., React, Node.js)"
             />
-            <button onClick={addSkill} className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700">
+            <button onClick={addSkill} type="button" className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 whitespace-nowrap">
               Add
             </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
             {(profile.skills || []).map((skill, index) => (
-              <span key={index} className="bg-blue-100 dark:bg-blue-900 text-primary dark:text-blue-300 px-3 py-1 rounded-full flex items-center gap-2">
+              <span key={index} className="bg-blue-100 dark:bg-blue-900 text-primary dark:text-blue-300 px-3 py-1 rounded-full flex items-center gap-2 text-sm">
                 {skill}
-                <button onClick={() => removeSkill(index)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-600">✕</button>
+                <button type="button" onClick={() => removeSkill(index)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-600">✕</button>
               </span>
             ))}
           </div>

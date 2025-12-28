@@ -26,7 +26,7 @@ function Dashboard() {
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg sm:text-2xl font-bold text-primary dark:text-blue-400">JobBoard Dashboard</h2>
+            <h2 className="text-lg sm:text-2xl font-bold text-primary dark:text-blue-400">JobBoard</h2>
             <div className="flex items-center gap-3">
               <DarkModeToggle />
               <NotificationBell />
