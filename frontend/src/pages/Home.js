@@ -140,80 +140,139 @@ function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation Bar */}
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
-            JobBoard
-          </h1>
-          <div className="flex gap-4 items-center">
-            <DarkModeToggle />
-            {user ? (
-              <>
-                {user.user_type === 'job_seeker' && (
-                  <button 
-                    onClick={() => navigate('/saved-jobs')} 
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition flex items-center gap-2"
-                  >
-                    🔖 Saved Jobs
-                  </button>
-                )}
-                <NotificationBell />
-                <div className="flex items-center gap-2">
-                  <AvatarDisplay avatarId={user.avatar} size="sm" />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
-                  </span>
-                </div>
-                <button 
-                  onClick={() => navigate('/dashboard')} 
-                  className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-                >
-                  Dashboard
-                </button>
-                <button 
-                  onClick={logout} 
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <button 
-                  onClick={() => navigate('/login')} 
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition"
-                >
-                  Login
-                </button>
-                <button 
-                  onClick={() => navigate('/register')} 
-                  className="px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
+        <div className="container mx-auto px-4 py-4">
+          {/* Mobile Layout */}
+          <div className="flex md:hidden justify-between items-center">
+            <h1 className="text-xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
+              JobBoard
+            </h1>
+            <div className="flex gap-2 items-center">
+              <DarkModeToggle />
+              {user && <NotificationBell />}
+              {user && <AvatarDisplay avatarId={user.avatar} size="sm" />}
+            </div>
           </div>
+          
+          {/* Desktop Layout */}
+          <div className="hidden md:flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
+              JobBoard
+            </h1>
+            <div className="flex gap-4 items-center">
+              <DarkModeToggle />
+              {user ? (
+                <>
+                  {user.user_type === 'job_seeker' && (
+                    <button 
+                      onClick={() => navigate('/saved-jobs')} 
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition flex items-center gap-2"
+                    >
+                      🔖
+                    </button>
+                  )}
+                  <NotificationBell />
+                  <div className="flex items-center gap-2">
+                    <AvatarDisplay avatarId={user.avatar} size="sm" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => navigate('/dashboard')} 
+                    className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
+                  >
+                    Dashboard
+                  </button>
+                  <button 
+                    onClick={logout} 
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => navigate('/login')} 
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition"
+                  >
+                    Login
+                  </button>
+                  <button 
+                    onClick={() => navigate('/register')} 
+                    className="px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {/* Mobile Menu (if logged in) */}
+          {user && (
+            <div className="md:hidden mt-3 flex flex-col gap-2">
+              {user.user_type === 'job_seeker' && (
+                <button 
+                  onClick={() => navigate('/saved-jobs')} 
+                  className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
+                >
+                  🔖
+                </button>
+              )}
+              <button 
+                onClick={() => navigate('/dashboard')} 
+                className="w-full px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
+              >
+                Dashboard
+              </button>
+              <button 
+                onClick={logout} 
+                className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+          
+          {/* Mobile Auth Buttons (if not logged in) */}
+          {!user && (
+            <div className="md:hidden mt-3 flex gap-2">
+              <button 
+                onClick={() => navigate('/login')} 
+                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+              >
+                Login
+              </button>
+              <button 
+                onClick={() => navigate('/register')} 
+                className="flex-1 px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white py-20 transition-colors">
+      <section className="bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white py-12 sm:py-20 transition-colors">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-4">Find Your Dream Job</h1>
-          <p className="text-xl">Connect with top companies and start your career journey today</p>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4">Find Your Dream Job</h1>
+          <p className="text-lg sm:text-xl">Connect with top companies and start your career journey today</p>
         </div>
       </section>
 
       {/* Search & Filters */}
-      <section className="container mx-auto px-4 py-8">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Search & Filter Jobs</h2>
+      <section className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 transition-colors">
+          <h2 className="text-lg sm:text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Search & Filter Jobs</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="sm:col-span-2">
               <input
                 type="text"
-                placeholder="Search by title, company, or keywords..."
+                placeholder="Search by title, company..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -246,7 +305,7 @@ function Home() {
           </div>
 
           {(searchTerm || locationFilter || jobTypeFilter) && (
-            <div className="mt-4 flex items-center gap-4">
+            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {filteredJobs.length} of {jobs.length} jobs
               </p>
@@ -262,8 +321,8 @@ function Home() {
       </section>
 
       {/* Jobs Listing */}
-      <section className="container mx-auto px-4 pb-12">
-        <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-gray-100">
+      <section className="container mx-auto px-4 pb-8 sm:pb-12">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">
           {filteredJobs.length === jobs.length ? 'All Jobs' : 'Filtered Results'}
         </h2>
         
