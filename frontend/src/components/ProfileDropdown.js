@@ -59,7 +59,7 @@ function ProfileDropdown({ user, onLogout }) {
           {/* Dropdown Content */}
           <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-2xl z-20 border border-gray-200 dark:border-gray-700 overflow-hidden">
             {/* User Info Header */}
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-750 border-b border-gray-200 dark:border-gray-700">
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <AvatarDisplay avatarId={user.avatar} size="md" />
                 <div>

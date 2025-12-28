@@ -6,6 +6,7 @@ import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
 import AvatarSelector from '../components/AvatarSelector';
 import AvatarDisplay from '../components/AvatarDisplay';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 function Profile() {
   const { user, logout, updateAvatar } = useContext(AuthContext);
@@ -141,22 +142,16 @@ function Profile() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation */}
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
-            JobBoard
-          </h1>
-          <div className="flex items-center gap-4">
-            <DarkModeToggle />
-            <NotificationBell />
-            <span className="text-gray-700 dark:text-gray-300">
-              <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
-            </span>
-            <button onClick={() => navigate('/dashboard')} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400">
-              Dashboard
-            </button>
-            <button onClick={logout} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">
-              Logout
-            </button>
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
+              JobBoard
+            </h1>
+            <div className="flex gap-3 items-center">
+              <DarkModeToggle />
+              <NotificationBell />
+              <ProfileDropdown user={user} onLogout={logout} />
+            </div>
           </div>
         </div>
       </nav>

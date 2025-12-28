@@ -142,9 +142,8 @@ function Home() {
       {/* Navigation Bar */}
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div className="container mx-auto px-4 py-4">
-          {/* Mobile/Tablet Layout (< lg) */}
-          <div className="flex lg:hidden justify-between items-center">
-            <h1 className="text-xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
               JobBoard
             </h1>
             <div className="flex gap-3 items-center">
@@ -156,73 +155,17 @@ function Home() {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => navigate('/login')} 
-                    className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                   >
                     Login
                   </button>
                   <button 
                     onClick={() => navigate('/register')} 
-                    className="px-3 py-1.5 text-sm bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
+                    className="px-3 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
                   >
                     Sign Up
                   </button>
                 </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Desktop Layout (>= lg) */}
-          <div className="hidden lg:flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
-              JobBoard
-            </h1>
-            <div className="flex gap-4 items-center">
-              <DarkModeToggle />
-              {user ? (
-                <>
-                  {user.user_type === 'job_seeker' && (
-                    <button 
-                      onClick={() => navigate('/saved-jobs')} 
-                      className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition flex items-center gap-2"
-                    >
-                      🔖 Saved Jobs
-                    </button>
-                  )}
-                  <NotificationBell />
-                  <div className="flex items-center gap-2">
-                    <AvatarDisplay avatarId={user.avatar} size="sm" />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      <span className="font-bold">{firstName}</span> <span className="font-normal">{userTypeDisplay}</span>
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => navigate('/dashboard')} 
-                    className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-                  >
-                    Dashboard
-                  </button>
-                  <button 
-                    onClick={logout} 
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button 
-                    onClick={() => navigate('/login')} 
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition"
-                  >
-                    Login
-                  </button>
-                  <button 
-                    onClick={() => navigate('/register')} 
-                    className="px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-                  >
-                    Sign Up
-                  </button>
-                </>
               )}
             </div>
           </div>
