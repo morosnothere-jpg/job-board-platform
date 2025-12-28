@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
 import AvatarDisplay from '../components/AvatarDisplay';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 function Dashboard() {
   const { user, logout } = useContext(AuthContext);
@@ -24,18 +25,18 @@ function Dashboard() {
       {/* Top Navigation */}
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div className="container mx-auto px-4 py-4">
-          {/* Mobile Layout */}
-          <div className="flex md:hidden justify-between items-center">
+          {/* Mobile/Tablet Layout (< lg) */}
+          <div className="flex lg:hidden justify-between items-center">
             <h2 className="text-lg font-bold text-primary dark:text-blue-400">JobBoard</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <DarkModeToggle />
               <NotificationBell />
-              <AvatarDisplay avatarId={user.avatar} size="sm" />
+              <ProfileDropdown user={user} onLogout={logout} />
             </div>
           </div>
           
-          {/* Desktop Layout */}
-          <div className="hidden md:flex justify-between items-center">
+          {/* Desktop Layout (>= lg) */}
+          <div className="hidden lg:flex justify-between items-center">
             <h2 className="text-2xl font-bold text-primary dark:text-blue-400">JobBoard Dashboard</h2>
             <div className="flex items-center gap-4">
               <DarkModeToggle />
@@ -59,22 +60,6 @@ function Dashboard() {
                 Logout
               </button>
             </div>
-          </div>
-          
-          {/* Mobile Bottom Bar */}
-          <div className="md:hidden mt-3 flex gap-2">
-            <button 
-              onClick={() => navigate('/')} 
-              className="flex-1 px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm"
-            >
-              Home
-            </button>
-            <button 
-              onClick={logout} 
-              className="flex-1 px-3 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition text-sm"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </nav>

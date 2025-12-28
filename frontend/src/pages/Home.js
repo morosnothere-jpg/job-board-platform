@@ -5,6 +5,7 @@ import { getAllJobs, saveJob, unsaveJob, checkIfJobSaved } from '../services/api
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
 import AvatarDisplay from '../components/AvatarDisplay';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 function Home() {
   const [jobs, setJobs] = useState([]);
@@ -141,20 +142,37 @@ function Home() {
       {/* Navigation Bar */}
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div className="container mx-auto px-4 py-4">
-          {/* Mobile Layout */}
-          <div className="flex md:hidden justify-between items-center">
+          {/* Mobile/Tablet Layout (< lg) */}
+          <div className="flex lg:hidden justify-between items-center">
             <h1 className="text-xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
               JobBoard
             </h1>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-3 items-center">
               <DarkModeToggle />
               {user && <NotificationBell />}
-              {user && <AvatarDisplay avatarId={user.avatar} size="sm" />}
+              {user ? (
+                <ProfileDropdown user={user} onLogout={logout} />
+              ) : (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => navigate('/login')} 
+                    className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                  >
+                    Login
+                  </button>
+                  <button 
+                    onClick={() => navigate('/register')} 
+                    className="px-3 py-1.5 text-sm bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Desktop Layout */}
-          <div className="hidden md:flex justify-between items-center">
+          {/* Desktop Layout (>= lg) */}
+          <div className="hidden lg:flex justify-between items-center">
             <h1 className="text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
               JobBoard
             </h1>
@@ -167,7 +185,7 @@ function Home() {
                       onClick={() => navigate('/saved-jobs')} 
                       className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-blue-400 transition flex items-center gap-2"
                     >
-                      🔖
+                      🔖 Saved Jobs
                     </button>
                   )}
                   <NotificationBell />
@@ -208,50 +226,6 @@ function Home() {
               )}
             </div>
           </div>
-          
-          {/* Mobile Menu (if logged in) */}
-          {user && (
-            <div className="md:hidden mt-3 flex flex-col gap-2">
-              {user.user_type === 'job_seeker' && (
-                <button 
-                  onClick={() => navigate('/saved-jobs')} 
-                  className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition"
-                >
-                  🔖
-                </button>
-              )}
-              <button 
-                onClick={() => navigate('/dashboard')} 
-                className="w-full px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-              >
-                Dashboard
-              </button>
-              <button 
-                onClick={logout} 
-                className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-              >
-                Logout
-              </button>
-            </div>
-          )}
-          
-          {/* Mobile Auth Buttons (if not logged in) */}
-          {!user && (
-            <div className="md:hidden mt-3 flex gap-2">
-              <button 
-                onClick={() => navigate('/login')} 
-                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-              >
-                Login
-              </button>
-              <button 
-                onClick={() => navigate('/register')} 
-                className="flex-1 px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-              >
-                Sign Up
-              </button>
-            </div>
-          )}
         </div>
       </nav>
 
