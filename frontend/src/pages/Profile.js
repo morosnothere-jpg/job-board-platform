@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { useNavigate, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getMyProfile, saveProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
@@ -11,10 +11,13 @@ import ProfileDropdown from '../components/ProfileDropdown';
 function Profile() {
   const { user, logout, updateAvatar } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationContext = useContext(UNSAFE_NavigationContext);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isNavigationBlocked, setIsNavigationBlocked] = useState(false);
   
   const [profile, setProfile] = useState({
     bio: '',
@@ -54,7 +57,47 @@ function Profile() {
     fetchProfile();
   }, [user, navigate]);
 
-  // Warn before leaving with unsaved changes
+  // Block navigation when there are unsaved changes
+  useEffect(() => {
+    if (!hasUnsavedChanges || !navigationContext?.navigator) return;
+
+    const { navigator } = navigationContext;
+    const originalPush = navigator.push;
+    const originalReplace = navigator.replace;
+    const originalGo = navigator.go;
+    const originalBack = navigator.back;
+    const originalForward = navigator.forward;
+
+    const confirmNavigation = (callback, ...args) => {
+      if (hasUnsavedChanges) {
+        const shouldProceed = window.confirm(
+          'You have unsaved changes. Do you want to leave without saving?'
+        );
+        if (shouldProceed) {
+          setHasUnsavedChanges(false);
+          setTimeout(() => callback.apply(navigator, args), 0);
+        }
+      } else {
+        callback.apply(navigator, args);
+      }
+    };
+
+    navigator.push = (...args) => confirmNavigation(originalPush, ...args);
+    navigator.replace = (...args) => confirmNavigation(originalReplace, ...args);
+    navigator.go = (...args) => confirmNavigation(originalGo, ...args);
+    navigator.back = (...args) => confirmNavigation(originalBack, ...args);
+    navigator.forward = (...args) => confirmNavigation(originalForward, ...args);
+
+    return () => {
+      navigator.push = originalPush;
+      navigator.replace = originalReplace;
+      navigator.go = originalGo;
+      navigator.back = originalBack;
+      navigator.forward = originalForward;
+    };
+  }, [hasUnsavedChanges, navigationContext]);
+
+  // Warn before leaving with unsaved changes (browser refresh/close)
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (hasUnsavedChanges) {
@@ -67,18 +110,6 @@ function Profile() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  // Custom navigation handler
-  const handleNavigation = (path) => {
-    if (hasUnsavedChanges) {
-      if (window.confirm('You have unsaved changes. Do you want to leave without saving?')) {
-        setHasUnsavedChanges(false);
-        navigate(path);
-      }
-    } else {
-      navigate(path);
-    }
-  };
-
   const handleLogoutWithWarning = () => {
     if (hasUnsavedChanges) {
       if (window.confirm('You have unsaved changes. Do you want to logout without saving?')) {
@@ -87,6 +118,20 @@ function Profile() {
       }
     } else {
       logout();
+    }
+  };
+
+  const handleNavigationWithWarning = (path) => {
+    if (hasUnsavedChanges) {
+      const shouldProceed = window.confirm(
+        'You have unsaved changes. Do you want to leave without saving?'
+      );
+      if (shouldProceed) {
+        setHasUnsavedChanges(false);
+        setTimeout(() => navigate(path), 0);
+      }
+    } else {
+      navigate(path);
     }
   };
 
@@ -190,7 +235,7 @@ function Profile() {
       <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
+            <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => handleNavigationWithWarning('/')}>
               JobBoard
             </h1>
             <div className="flex gap-3 items-center">
@@ -199,7 +244,7 @@ function Profile() {
               <ProfileDropdown 
                 user={user} 
                 onLogout={handleLogoutWithWarning}
-                onNavigate={handleNavigation}
+                onNavigate={handleNavigationWithWarning}
               />
             </div>
           </div>
@@ -218,10 +263,19 @@ function Profile() {
           </button>
         </div>
 
+        {hasUnsavedChanges && (
+          <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 px-4 py-3 rounded mb-6">
+            ⚠️ You have unsaved changes. Remember to save your profile!
+          </div>
+        )}
+
         {/* Avatar Selection */}
         <AvatarSelector 
           currentAvatar={selectedAvatar} 
-          onSelect={setSelectedAvatar}
+          onSelect={(avatar) => {
+            setSelectedAvatar(avatar);
+            setHasUnsavedChanges(true);
+          }}
         />
 
         {/* Basic Info */}
@@ -232,7 +286,10 @@ function Profile() {
             <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Bio</label>
             <textarea
               value={profile.bio || ''}
-              onChange={(e) => setProfile({...profile, bio: e.target.value})}
+              onChange={(e) => {
+                setProfile({...profile, bio: e.target.value});
+                setHasUnsavedChanges(true);
+              }}
               rows="4"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               placeholder="Tell recruiters about yourself..."
