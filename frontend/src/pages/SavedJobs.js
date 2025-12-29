@@ -96,7 +96,7 @@ function SavedJobs() {
         {savedJobs.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center transition-colors">
             <p className="text-gray-600 dark:text-gray-400 mb-4">You haven't saved any jobs yet.</p>
-            <p className="text-gray-500 dark:text-gray-500 mb-6">Click the bookmark icon on any job to save it for later!</p>
+            <p className="text-gray-500 dark:text-gray-500 mb-6">Click the heart icon on any job to save it for later!</p>
             <button 
               onClick={() => navigate('/')}
               className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
@@ -109,15 +109,18 @@ function SavedJobs() {
             {savedJobs.map((savedJob) => {
               const job = savedJob.jobs;
               return (
-                <div key={savedJob.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-xl transition">
+                <div key={savedJob.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-xl transition relative">
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex-1">{job.title}</h3>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex-1 pr-2">{job.title}</h3>
                     <button
                       onClick={() => handleUnsave(job.id)}
-                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-600 text-xl"
+                      className="flex-shrink-0 hover:scale-110 transition"
                       title="Remove from saved"
                     >
-                      ❌
+                      {/* Filled heart with X overlay */}
+                      <svg className="w-6 h-6 text-red-500 hover:text-red-700" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                      </svg>
                     </button>
                   </div>
                   

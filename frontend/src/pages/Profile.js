@@ -9,7 +9,7 @@ import AvatarDisplay from '../components/AvatarDisplay';
 import ProfileDropdown from '../components/ProfileDropdown';
 
 function Profile() {
-  const { user, logout, updateAvatar } = useContext(AuthContext);
+  const { user, logout, updateAvatar, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const navigationContext = useContext(UNSAFE_NavigationContext);
@@ -45,6 +45,9 @@ function Profile() {
   const [portfolioForm, setPortfolioForm] = useState({ title: '', url: '', description: '' });
 
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) return;
+    
     if (!user) {
       navigate('/login');
       return;
@@ -55,7 +58,7 @@ function Profile() {
       return;
     }
     fetchProfile();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   // Block navigation when there are unsaved changes
   useEffect(() => {
@@ -218,12 +221,18 @@ function Profile() {
     setHasUnsavedChanges(true);
   };
 
-  if (loading) {
+  // Show loading while auth or profile is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors">
         <p className="text-gray-600 dark:text-gray-400">Loading...</p>
       </div>
     );
+  }
+
+  // Don't render if no user (will redirect)
+  if (!user) {
+    return null;
   }
 
   const firstName = user.full_name.split(' ')[0];

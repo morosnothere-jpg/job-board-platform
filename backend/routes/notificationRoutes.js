@@ -57,5 +57,38 @@ module.exports = (supabase) => {
     }
   });
 
+  // Delete a single notification
+  router.delete('/:id', authenticateToken, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', req.params.id)
+        .eq('user_id', req.user.userId);
+
+      if (error) throw error;
+
+      res.json({ message: 'Notification deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete all notifications
+  router.delete('/delete-all', authenticateToken, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', req.user.userId);
+
+      if (error) throw error;
+
+      res.json({ message: 'All notifications deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
 };
