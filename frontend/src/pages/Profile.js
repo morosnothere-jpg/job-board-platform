@@ -245,7 +245,10 @@ function Profile() {
               <input
                 type="text"
                 value={profile.location || ''}
-                onChange={(e) => setProfile({...profile, location: e.target.value})}
+                onChange={(e) => {
+                  setProfile({...profile, location: e.target.value});
+                  setHasUnsavedChanges(true);
+                }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 placeholder="City, Country"
               />
@@ -255,7 +258,10 @@ function Profile() {
               <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Availability</label>
               <select
                 value={profile.availability || 'Available'}
-                onChange={(e) => setProfile({...profile, availability: e.target.value})}
+                onChange={(e) => {
+                  setProfile({...profile, availability: e.target.value});
+                  setHasUnsavedChanges(true);
+                }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option>Available</option>
@@ -276,11 +282,11 @@ function Profile() {
               type="text"
               value={newSkill}
               onChange={(e) => setNewSkill(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              placeholder="Add a skill (e.g., React, Node.js)"
+              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+              className="flex-1 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              placeholder="Add a skill"
             />
-            <button onClick={addSkill} type="button" className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 whitespace-nowrap">
+            <button onClick={addSkill} type="button" className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 whitespace-nowrap flex-shrink-0">
               Add
             </button>
           </div>
@@ -299,21 +305,21 @@ function Profile() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Work Experience</h2>
           
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-750">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"
                 value={experienceForm.company}
                 onChange={(e) => setExperienceForm({...experienceForm, company: e.target.value})}
                 placeholder="Company"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="text"
                 value={experienceForm.position}
                 onChange={(e) => setExperienceForm({...experienceForm, position: e.target.value})}
                 placeholder="Position"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="month"
@@ -336,6 +342,7 @@ function Profile() {
                 type="checkbox"
                 checked={experienceForm.current}
                 onChange={(e) => setExperienceForm({...experienceForm, current: e.target.checked, end_date: e.target.checked ? '' : experienceForm.end_date})}
+                className="bg-white dark:bg-gray-700"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">I currently work here</span>
             </label>
@@ -344,16 +351,16 @@ function Profile() {
               onChange={(e) => setExperienceForm({...experienceForm, description: e.target.value})}
               placeholder="Description"
               rows="3"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             />
-            <button onClick={addExperience} className="px-4 py-2 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700">
+            <button onClick={addExperience} type="button" className="px-4 py-2 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700">
               + Add Experience
             </button>
           </div>
 
           <div className="space-y-4">
             {(profile.experience || []).map((exp, index) => (
-              <div key={index} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-750">
+              <div key={index} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{exp.position}</h3>
@@ -376,28 +383,28 @@ function Profile() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Education</h2>
           
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-750">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"
                 value={educationForm.institution}
                 onChange={(e) => setEducationForm({...educationForm, institution: e.target.value})}
                 placeholder="Institution"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="text"
                 value={educationForm.degree}
                 onChange={(e) => setEducationForm({...educationForm, degree: e.target.value})}
                 placeholder="Degree"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="text"
                 value={educationForm.field}
                 onChange={(e) => setEducationForm({...educationForm, field: e.target.value})}
                 placeholder="Field of Study"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="month"
@@ -420,17 +427,18 @@ function Profile() {
                 type="checkbox"
                 checked={educationForm.current}
                 onChange={(e) => setEducationForm({...educationForm, current: e.target.checked, end_date: e.target.checked ? '' : educationForm.end_date})}
+                className="bg-white dark:bg-gray-700"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">I'm currently studying here</span>
             </label>
-            <button onClick={addEducation} className="px-4 py-2 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700">
+            <button onClick={addEducation} type="button" className="px-4 py-2 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700">
               + Add Education
             </button>
           </div>
 
           <div className="space-y-4">
             {(profile.education || []).map((edu, index) => (
-              <div key={index} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-750">
+              <div key={index} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{edu.degree}</h3>
@@ -453,38 +461,38 @@ function Profile() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Portfolio & Projects</h2>
           
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-750">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
             <div className="grid grid-cols-1 gap-4 mb-4">
               <input
                 type="text"
                 value={portfolioForm.title}
                 onChange={(e) => setPortfolioForm({...portfolioForm, title: e.target.value})}
                 placeholder="Project Title"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="url"
                 value={portfolioForm.url}
                 onChange={(e) => setPortfolioForm({...portfolioForm, url: e.target.value})}
                 placeholder="URL (https://...)"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <textarea
                 value={portfolioForm.description}
                 onChange={(e) => setPortfolioForm({...portfolioForm, description: e.target.value})}
                 placeholder="Description"
                 rows="2"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
-            <button onClick={addPortfolio} className="px-4 py-2 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700">
+            <button onClick={addPortfolio} type="button" className="px-4 py-2 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700">
               + Add Portfolio Item
             </button>
           </div>
 
           <div className="space-y-4">
             {(profile.portfolio_links || []).map((item, index) => (
-              <div key={index} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-750">
+              <div key={index} className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{item.title}</h3>
@@ -512,8 +520,11 @@ function Profile() {
               <input
                 type="url"
                 value={profile.resume_link || ''}
-                onChange={(e) => setProfile({...profile, resume_link: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                onChange={(e) => {
+                  setProfile({...profile, resume_link: e.target.value});
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="Link to your resume (Google Drive, Dropbox, etc.)"
               />
             </div>
@@ -523,8 +534,11 @@ function Profile() {
               <input
                 type="url"
                 value={profile.linkedin_url || ''}
-                onChange={(e) => setProfile({...profile, linkedin_url: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                onChange={(e) => {
+                  setProfile({...profile, linkedin_url: e.target.value});
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="https://linkedin.com/in/your-profile"
               />
             </div>
@@ -534,8 +548,11 @@ function Profile() {
               <input
                 type="url"
                 value={profile.github_url || ''}
-                onChange={(e) => setProfile({...profile, github_url: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                onChange={(e) => {
+                  setProfile({...profile, github_url: e.target.value});
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="https://github.com/your-username"
               />
             </div>
@@ -545,8 +562,11 @@ function Profile() {
               <input
                 type="url"
                 value={profile.website_url || ''}
-                onChange={(e) => setProfile({...profile, website_url: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                onChange={(e) => {
+                  setProfile({...profile, website_url: e.target.value});
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="https://yourwebsite.com"
               />
             </div>
