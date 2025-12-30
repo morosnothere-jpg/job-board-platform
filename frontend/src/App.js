@@ -9,6 +9,7 @@ import ApplyJob from './pages/ApplyJob';
 import Profile from './pages/Profile';
 import ViewProfile from './pages/ViewProfile';
 import SavedJobs from './pages/SavedJobs';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/view-profile/:userId" element={<ViewProfile />} />
           <Route path="/saved-jobs" element={<SavedJobs />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </div>
     </Router>

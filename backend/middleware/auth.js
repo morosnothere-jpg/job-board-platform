@@ -24,4 +24,11 @@ const isRecruiter = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticateToken, isRecruiter };
+const isAdmin = (req, res, next) => {
+  if (req.user.user_type !== 'admin') {
+    return res.status(403).json({ error: 'Only admins can perform this action' });
+  }
+  next();
+};
+
+module.exports = { authenticateToken, isRecruiter, isAdmin };

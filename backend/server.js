@@ -22,6 +22,7 @@ const applicationRoutes = require('./routes/applicationRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const savedJobsRoutes = require('./routes/savedJobsRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 app.use('/api/auth', authRoutes(supabase));
 app.use('/api/jobs', jobRoutes(supabase));
@@ -29,6 +30,7 @@ app.use('/api/applications', applicationRoutes(supabase));
 app.use('/api/notifications', notificationRoutes(supabase));
 app.use('/api/profiles', profileRoutes(supabase));
 app.use('/api/saved-jobs', savedJobsRoutes(supabase));
+app.use('/api/admin', adminRoutes(supabase));
 
 // Test route
 app.get('/', (req, res) => {
