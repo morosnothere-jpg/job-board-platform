@@ -60,10 +60,10 @@ export const updateApplicationStatus = (id, statusData) =>
 // Admin APIs
 export const getAdminStats = () => api.get('/admin/stats');
 export const getAllUsers = (params) => api.get('/admin/users', { params });
-export const deleteUser = (userId) => api.delete(`/admin/users/${userId}`);
+export const deleteUser = (userId, reason) => api.delete(`/admin/users/${userId}`, { data: { reason } });
 export const updateUserType = (userId, userType) => api.put(`/admin/users/${userId}`, { user_type: userType });
 export const getAdminJobs = (params) => api.get('/admin/jobs', { params });
-export const deleteAdminJob = (jobId) => api.delete(`/admin/jobs/${jobId}`);
+export const deleteAdminJob = (jobId, reason) => api.delete(`/admin/jobs/${jobId}`, { data: { reason } });
 export const updateJobStatus = (jobId, status) => api.put(`/admin/jobs/${jobId}/status`, { status });
 export const getAdminApplications = (params) => api.get('/admin/applications', { params });
 export const getAdminActivity = (limit) => api.get('/admin/activity', { params: { limit } });

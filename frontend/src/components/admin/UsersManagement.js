@@ -32,13 +32,15 @@ function UsersManagement() {
   };
 
   const handleDeleteUser = async (userId, userName) => {
-    if (!window.confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
-      return;
-    }
+    const confirmed = window.confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`);
+    if (!confirmed) return;
 
+    // Ask for reason
+    const reason = prompt(`Please provide a reason for terminating ${userName}'s account (optional):`);
+    
     try {
-      await deleteUser(userId);
-      alert('User deleted successfully');
+      await deleteUser(userId, reason || undefined);
+      alert('User deleted successfully' + (reason ? ' and notification email sent' : ''));
       fetchUsers();
     } catch (error) {
       alert('Error deleting user: ' + (error.response?.data?.error || error.message));

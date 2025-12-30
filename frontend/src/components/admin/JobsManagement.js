@@ -32,13 +32,15 @@ function JobsManagement() {
   };
 
   const handleDeleteJob = async (jobId, jobTitle) => {
-    if (!window.confirm(`Are you sure you want to delete "${jobTitle}"? This action cannot be undone.`)) {
-      return;
-    }
+    const confirmed = window.confirm(`Are you sure you want to delete "${jobTitle}"? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    // Ask for reason
+    const reason = prompt(`Please provide a reason for removing "${jobTitle}" (optional):`);
 
     try {
-      await deleteAdminJob(jobId);
-      alert('Job deleted successfully');
+      await deleteAdminJob(jobId, reason || undefined);
+      alert('Job deleted successfully' + (reason ? ' and notification email sent to recruiter' : ''));
       fetchJobs();
     } catch (error) {
       alert('Error deleting job: ' + (error.response?.data?.error || error.message));
