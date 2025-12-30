@@ -253,7 +253,7 @@ function RecruiterDashboard() {
                         ) : (
                             <div className="space-y-4">
                                 {applications.map((app) => (
-                                    <div key={app.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-750">
+                                    <div key={app.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                                         <div className="flex justify-between items-start mb-3">
                                             <div>
                                                 <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100">{app.users?.full_name}</h3>

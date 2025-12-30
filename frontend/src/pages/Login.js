@@ -28,7 +28,7 @@ function Login() {
 
     try {
       await login(formData.email, formData.password);
-      navigate('/dashboard');
+      navigate('/'); // Redirect to home page
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
       setLoading(false);

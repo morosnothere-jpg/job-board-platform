@@ -32,7 +32,7 @@ function Register() {
 
     try {
       await register(formData);
-      navigate('/dashboard');
+      navigate('/'); // Redirect to home page
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
       setLoading(false);
