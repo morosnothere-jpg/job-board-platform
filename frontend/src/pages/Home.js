@@ -19,8 +19,9 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [jobTypeFilter, setJobTypeFilter] = useState('');
+  const [workModeFilter, setWorkModeFilter] = useState('');
   const [savedJobIds, setSavedJobIds] = useState(new Set());
-  
+
   // AI Matching state
   const [userProfile, setUserProfile] = useState(null);
   const [jobMatches, setJobMatches] = useState({});
@@ -36,7 +37,7 @@ function Home() {
 
   useEffect(() => {
     filterJobs();
-  }, [searchTerm, locationFilter, jobTypeFilter, jobs, sortBy, jobMatches]);
+  }, [searchTerm, locationFilter, jobTypeFilter, workModeFilter, jobs, sortBy, jobMatches]);
 
   useEffect(() => {
     if (jobs.length > 0 && user && user.user_type === 'job_seeker') {
@@ -70,7 +71,7 @@ function Home() {
 
   const calculateAllMatches = (jobsList, profile) => {
     if (!profile) return;
-    
+
     const matches = {};
     jobsList.forEach(job => {
       matches[job.id] = calculateJobMatch(profile, job);
@@ -86,7 +87,7 @@ function Home() {
 
   const checkSavedJobs = async (jobs) => {
     if (!user || user.user_type !== 'job_seeker') return;
-    
+
     try {
       const savedIds = new Set();
       for (const job of jobs) {
@@ -105,7 +106,7 @@ function Home() {
     let filtered = jobs;
 
     if (searchTerm) {
-      filtered = filtered.filter(job => 
+      filtered = filtered.filter(job =>
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -113,13 +114,13 @@ function Home() {
     }
 
     if (locationFilter) {
-      filtered = filtered.filter(job => 
+      filtered = filtered.filter(job =>
         job.location.toLowerCase().includes(locationFilter.toLowerCase())
       );
     }
 
-    if (jobTypeFilter) {
-      filtered = filtered.filter(job => job.job_type === jobTypeFilter);
+    if (workModeFilter) {
+      filtered = filtered.filter(job => job.work_mode === workModeFilter);
     }
 
     // Sort by match score if recommended, otherwise by date
@@ -130,7 +131,7 @@ function Home() {
         return scoreB - scoreA;
       });
     } else {
-      filtered = [...filtered].sort((a, b) => 
+      filtered = [...filtered].sort((a, b) =>
         new Date(b.created_at) - new Date(a.created_at)
       );
     }
@@ -142,6 +143,7 @@ function Home() {
     setSearchTerm('');
     setLocationFilter('');
     setJobTypeFilter('');
+    setWorkModeFilter('');
   };
 
   const handleApply = (jobId) => {
@@ -158,12 +160,12 @@ function Home() {
 
   const handleSaveJob = async (e, jobId) => {
     e.stopPropagation();
-    
+
     if (!user) {
       navigate('/login');
       return;
     }
-    
+
     if (user.user_type !== 'job_seeker') {
       alert('Only job seekers can save jobs');
       return;
@@ -207,14 +209,14 @@ function Home() {
                 <ProfileDropdown user={user} onLogout={logout} />
               ) : (
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => navigate('/login')} 
+                  <button
+                    onClick={() => navigate('/login')}
                     className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
                   >
                     Login
                   </button>
-                  <button 
-                    onClick={() => navigate('/register')} 
+                  <button
+                    onClick={() => navigate('/register')}
                     className="px-3 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
                   >
                     Sign Up
@@ -243,7 +245,7 @@ function Home() {
               <div className="flex-1">
                 <h3 className="text-xl font-bold mb-2">Get AI-Powered Job Recommendations!</h3>
                 <p className="mb-4">Complete your profile to unlock personalized job matches based on your skills, experience, and preferences.</p>
-                <button 
+                <button
                   onClick={() => navigate('/profile')}
                   className="px-6 py-3 bg-white text-purple-600 dark:text-purple-800 rounded-lg hover:bg-gray-100 transition font-semibold"
                 >
@@ -260,35 +262,33 @@ function Home() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 transition-colors">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">Search & Filter Jobs</h2>
-            
+
             {/* Sort Toggle */}
             {showAIFeatures && (
               <div className="flex gap-2">
                 <button
                   onClick={() => setSortBy('recommended')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-                    sortBy === 'recommended'
-                      ? 'bg-primary dark:bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${sortBy === 'recommended'
+                    ? 'bg-primary dark:bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    }`}
                 >
                   🤖 Recommended
                 </button>
                 <button
                   onClick={() => setSortBy('recent')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
-                    sortBy === 'recent'
-                      ? 'bg-primary dark:bg-blue-600 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${sortBy === 'recent'
+                    ? 'bg-primary dark:bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    }`}
                 >
                   🕒 Recent
                 </button>
               </div>
             )}
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <div className="sm:col-span-2">
               <input
                 type="text"
@@ -316,20 +316,33 @@ function Home() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="">All Job Types</option>
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="Remote">Remote</option>
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="contract">Contract</option>
+                <option value="flexible">Flexible</option>
+              </select>
+            </div>
+
+            <div>
+              <select
+                value={workModeFilter}
+                onChange={(e) => setWorkModeFilter(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="">All Work Modes</option>
+                <option value="on-site">On-site</option>
+                <option value="remote">Remote</option>
+                <option value="hybrid">Hybrid</option>
               </select>
             </div>
           </div>
 
-          {(searchTerm || locationFilter || jobTypeFilter) && (
+          {(searchTerm || locationFilter || jobTypeFilter || workModeFilter) && (
             <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {filteredJobs.length} of {jobs.length} jobs
               </p>
-              <button 
+              <button
                 onClick={clearFilters}
                 className="text-sm text-primary dark:text-blue-400 hover:underline"
               >
@@ -345,7 +358,7 @@ function Home() {
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">
           {sortBy === 'recommended' && showAIFeatures ? '🤖 Recommended For You' : filteredJobs.length === jobs.length ? 'All Jobs' : 'Filtered Results'}
         </h2>
-        
+
         {loading ? (
           <p className="text-gray-600 dark:text-gray-400">Loading jobs...</p>
         ) : filteredJobs.length === 0 ? (
@@ -354,7 +367,7 @@ function Home() {
               {jobs.length === 0 ? 'No jobs available at the moment.' : 'No jobs match your search criteria.'}
             </p>
             {jobs.length > 0 && (
-              <button 
+              <button
                 onClick={clearFilters}
                 className="px-6 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
               >
@@ -367,7 +380,7 @@ function Home() {
             {filteredJobs.map((job) => {
               const match = jobMatches[job.id];
               const matchLevel = match ? getMatchLevel(match.score) : null;
-              
+
               return (
                 <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-xl transition relative flex flex-col">
                   {/* Save Button */}
@@ -396,21 +409,33 @@ function Home() {
                       <span>{matchLevel.level} Match</span>
                     </div>
                   )}
-                  
+
                   <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">{job.title}</h3>
                   <p className="text-primary dark:text-blue-400 font-semibold mb-2">{job.company}</p>
                   <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
                     <span className="mr-2">📍</span>
                     <span>{job.location}</span>
                   </div>
-                  <span className="inline-block bg-blue-100 dark:bg-blue-900 text-primary dark:text-blue-300 px-3 py-1 rounded-full text-sm mb-3 w-fit">
-                    {job.job_type}
-                  </span>
+                  <div className="flex gap-2 mb-3">
+                    <span className="inline-block bg-blue-100 dark:bg-blue-900 text-primary dark:text-blue-300 px-3 py-1 rounded-full text-sm w-fit">
+                      {job.job_type}
+                    </span>
+                    {job.work_mode && (
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm w-fit ${job.work_mode === 'remote' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' :
+                        job.work_mode === 'hybrid' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300' :
+                          'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                        }`}>
+                        {job.work_mode === 'remote' ? '🏠 Remote' :
+                          job.work_mode === 'hybrid' ? '🔄 Hybrid' :
+                            '🏢 On-site'}
+                      </span>
+                    )}
+                  </div>
                   {job.salary_range && (
                     <p className="text-secondary dark:text-green-400 font-semibold mb-3">💰 {job.salary_range}</p>
                   )}
                   <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 flex-grow">{job.description}</p>
-                  
+
                   {/* Match Reasons */}
                   {showAIFeatures && match && match.reasons && match.reasons.length > 0 && (
                     <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -425,9 +450,9 @@ function Home() {
                       </ul>
                     </div>
                   )}
-                  
-                  <button 
-                    onClick={() => handleApply(job.id)} 
+
+                  <button
+                    onClick={() => handleApply(job.id)}
                     className="w-full bg-primary dark:bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
                   >
                     Apply Now

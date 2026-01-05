@@ -17,7 +17,8 @@ function RecruiterDashboard() {
         description: '',
         company: user?.company_name || '',
         location: '',
-        job_type: 'Full-time',
+        job_type: 'full-time',
+        work_mode: 'on-site',
         salary_range: '',
         requirements: ''
     });
@@ -47,7 +48,8 @@ function RecruiterDashboard() {
                 description: '',
                 company: user?.company_name || '',
                 location: '',
-                job_type: 'Full-time',
+                job_type: 'full-time',
+                work_mode: 'on-site',
                 salary_range: '',
                 requirements: ''
             });
@@ -141,10 +143,23 @@ function RecruiterDashboard() {
                                     onChange={(e) => setNewJob({ ...newJob, job_type: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                                 >
-                                    <option>Full-time</option>
-                                    <option>Part-time</option>
-                                    <option>Contract</option>
-                                    <option>Remote</option>
+                                    <option value="full-time">Full-time</option>
+                                    <option value="part-time">Part-time</option>
+                                    <option value="contract">Contract</option>
+                                    <option value="flexible">Flexible</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Work Mode *</label>
+                                <select
+                                    value={newJob.work_mode}
+                                    onChange={(e) => setNewJob({ ...newJob, work_mode: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                >
+                                    <option value="on-site">On-site</option>
+                                    <option value="remote">Remote</option>
+                                    <option value="hybrid">Hybrid</option>
                                 </select>
                             </div>
 

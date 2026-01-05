@@ -36,7 +36,7 @@ export const calculateJobMatch = (userProfile, job) => {
 
   // 2. EXPERIENCE MATCH (25% weight)
   const experienceMatch = calculateExperienceMatch(
-    userProfile.experience || [], 
+    userProfile.experience || [],
     job.requirements || '',
     job.title || ''
   );
@@ -131,10 +131,10 @@ const calculateSkillsMatch = (userSkills, jobRequirements) => {
 
   // Score based on percentage of user skills that match
   const matchPercentage = (matchCount / Math.max(userSkills.length, 1)) * 100;
-  
+
   // Bonus points if multiple skills match
   const bonusPoints = Math.min(matchCount * 10, 30);
-  
+
   const score = Math.min(matchPercentage + bonusPoints, 100);
 
   return {
@@ -158,8 +158,8 @@ const calculateExperienceMatch = (userExperience, jobRequirements, jobTitle) => 
     if (exp.start_date) {
       const start = new Date(exp.start_date);
       const end = exp.current ? new Date() : new Date(exp.end_date || new Date());
-      const months = (end.getFullYear() - start.getFullYear()) * 12 + 
-                     (end.getMonth() - start.getMonth());
+      const months = (end.getFullYear() - start.getFullYear()) * 12 +
+        (end.getMonth() - start.getMonth());
       totalMonths += Math.max(months, 0);
     }
   });
@@ -206,7 +206,7 @@ const calculateExperienceMatch = (userExperience, jobRequirements, jobTitle) => 
     score = Math.min(50 + (yearsOfExperience * 10), 100);
   } else {
     const experienceRatio = yearsOfExperience / requiredYears;
-    
+
     if (experienceRatio >= 1) {
       // Has required experience or more
       score = Math.min(80 + (experienceRatio * 10), 100);
@@ -223,7 +223,7 @@ const calculateExperienceMatch = (userExperience, jobRequirements, jobTitle) => 
   const relevantExperience = userExperience.some(exp => {
     const positionLower = (exp.position || '').toLowerCase();
     const titleLower = jobTitle.toLowerCase();
-    
+
     // Check if position title has similar keywords
     const titleWords = titleLower.split(' ').filter(w => w.length > 3);
     return titleWords.some(word => positionLower.includes(word));
@@ -263,7 +263,7 @@ const calculateLocationMatch = (userLocation, jobLocation, jobType) => {
   // Check if same city
   const userCity = userLoc.split(',')[0].trim();
   const jobCity = jobLoc.split(',')[0].trim();
-  
+
   if (userCity === jobCity) {
     return { score: 95, reason: 'Same city' };
   }
@@ -276,7 +276,7 @@ const calculateLocationMatch = (userLocation, jobLocation, jobType) => {
   // Check if same country
   const userCountry = userLoc.split(',').pop().trim();
   const jobCountry = jobLoc.split(',').pop().trim();
-  
+
   if (userCountry === jobCountry) {
     return { score: 50, reason: 'Same country' };
   }

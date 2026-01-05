@@ -41,8 +41,7 @@ module.exports = (supabase) => {
   // Create new job (recruiter only)
   router.post('/', authenticateToken, isRecruiter, async (req, res) => {
     try {
-      const { title, description, company, location, job_type, salary_range, requirements } = req.body;
-
+      const { title, description, company, location, job_type, work_mode, salary_range, requirements } = req.body;
       const { data, error } = await supabase
         .from('jobs')
         .insert([
@@ -53,6 +52,7 @@ module.exports = (supabase) => {
             company,
             location,
             job_type,
+            work_mode,
             salary_range: salary_range || null,
             requirements,
             status: 'open'
@@ -92,8 +92,7 @@ module.exports = (supabase) => {
   // Update job (recruiter only - their own jobs)
   router.put('/:id', authenticateToken, isRecruiter, async (req, res) => {
     try {
-      const { title, description, company, location, job_type, salary_range, requirements, status } = req.body;
-
+      const { title, description, company, location, job_type, work_mode, salary_range, requirements, status } = req.body;
       const { data, error } = await supabase
         .from('jobs')
         .update({
@@ -102,6 +101,7 @@ module.exports = (supabase) => {
           company,
           location,
           job_type,
+          work_mode,
           salary_range,
           requirements,
           status
