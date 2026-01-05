@@ -24,6 +24,7 @@ function Home() {
 
   // AI Matching state
   const [userProfile, setUserProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [jobMatches, setJobMatches] = useState({});
   const [sortBy, setSortBy] = useState('recommended'); // 'recommended' or 'recent'
   const [showMatchInfo, setShowMatchInfo] = useState(false);
@@ -64,8 +65,10 @@ function Home() {
         setUserProfile(response.data.profile);
         calculateAllMatches(jobs, response.data.profile);
       }
+      setProfileLoading(false);
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setProfileLoading(false);
     }
   };
 
@@ -237,7 +240,7 @@ function Home() {
       </section>
 
       {/* AI Profile Prompt */}
-      {user && user.user_type === 'job_seeker' && !userProfile && (
+      {user && user.user_type === 'job_seeker' && !profileLoading && !userProfile && (
         <section className="container mx-auto px-4 py-6">
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-800 dark:to-pink-800 rounded-lg shadow-md p-6 text-white">
             <div className="flex items-start gap-4">

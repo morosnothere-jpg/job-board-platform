@@ -44,6 +44,17 @@ function NotificationBell() {
     }
   };
 
+  const handleViewJob = async (notificationId, jobId) => {
+    try {
+      await markAsRead(notificationId);
+      fetchNotifications();
+      setShowDropdown(false);
+      navigate(`/apply/${jobId}`);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead();
@@ -55,9 +66,9 @@ function NotificationBell() {
 
   const handleDeleteNotification = async (e, notificationId) => {
     e.stopPropagation(); // Prevent triggering the read action
-    
+
     setDeletingIds(prev => new Set(prev).add(notificationId));
-    
+
     try {
       await deleteNotification(notificationId);
       fetchNotifications();
@@ -88,17 +99,18 @@ function NotificationBell() {
   };
 
   const getNotificationIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'application': return '📝';
       case 'status_update': return '🔄';
       case 'message': return '💬';
+      case 'job_invitation': return '🎯';
       default: return 'ℹ️';
     }
   };
 
   const formatTimeAgo = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -114,20 +126,20 @@ function NotificationBell() {
         onClick={() => setShowDropdown(!showDropdown)}
         className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-blue-400 transition"
       >
-        <svg 
-          className="w-6 h-6" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" 
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
           />
         </svg>
-        
+
         {/* Unread Badge */}
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -140,11 +152,11 @@ function NotificationBell() {
       {showDropdown && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10" 
+          <div
+            className="fixed inset-0 z-10"
             onClick={() => setShowDropdown(false)}
           />
-          
+
           {/* Dropdown Content - Mobile First Design */}
           <div className="fixed md:absolute left-0 right-0 md:left-auto md:right-0 top-16 md:top-auto md:mt-2 mx-2 md:mx-0 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl z-20 max-h-[calc(100vh-5rem)] md:max-h-[500px] overflow-hidden flex flex-col border border-gray-200 dark:border-gray-700 transition-colors">
             {/* Header */}
@@ -182,29 +194,43 @@ function NotificationBell() {
                 notifications.map((notif) => (
                   <div
                     key={notif.id}
-                    className={`group relative p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition ${
-                      !notif.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                    } ${deletingIds.has(notif.id) ? 'opacity-50' : ''}`}
+                    className={`group relative p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition ${!notif.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      } ${deletingIds.has(notif.id) ? 'opacity-50' : ''}`}
                   >
-                    <div 
-                      onClick={() => handleMarkAsRead(notif.id, notif.link)}
-                      className="flex items-start gap-3 cursor-pointer pr-8"
+                    <div
+                      onClick={() => notif.type === 'job_invitation' ? null : handleMarkAsRead(notif.id, notif.link)}
+                      className={notif.type === 'job_invitation' ? '' : 'cursor-pointer'}
                     >
-                      <span className="text-2xl flex-shrink-0">{getNotificationIcon(notif.type)}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2">
-                          <h4 className="font-semibold text-gray-800 dark:text-gray-100 text-sm md:text-base break-words">{notif.title}</h4>
-                          {!notif.read && (
-                            <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></span>
+                      <div className="flex items-start gap-3 pr-8">
+                        <span className="text-2xl flex-shrink-0">{getNotificationIcon(notif.type)}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start gap-2">
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-100 text-sm md:text-base break-words">{notif.title}</h4>
+                            {!notif.read && (
+                              <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1"></span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 break-words">{notif.message}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                            {formatTimeAgo(notif.created_at)}
+                          </p>
+
+                          {/* View Job Button for Invitations */}
+                          {notif.type === 'job_invitation' && notif.job_id && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewJob(notif.id, notif.job_id);
+                              }}
+                              className="mt-3 px-4 py-2 bg-primary dark:bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
+                            >
+                              View Job
+                            </button>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 break-words">{notif.message}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                          {formatTimeAgo(notif.created_at)}
-                        </p>
                       </div>
                     </div>
-                    
+
                     {/* Delete Button - Shows on hover on desktop, always visible on mobile */}
                     <button
                       onClick={(e) => handleDeleteNotification(e, notif.id)}

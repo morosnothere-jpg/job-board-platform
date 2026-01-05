@@ -60,11 +60,11 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
       {showDropdown && (
         <>
           {/* Backdrop for mobile */}
-          <div 
-            className="fixed inset-0 z-10 md:hidden" 
+          <div
+            className="fixed inset-0 z-10 md:hidden"
             onClick={() => setShowDropdown(false)}
           />
-          
+
           {/* Dropdown Content */}
           <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-2xl z-20 border border-gray-200 dark:border-gray-700 overflow-hidden">
             {/* User Info Header */}
@@ -89,7 +89,10 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
               </button>
 
               <button
-                onClick={() => handleNavigation('/dashboard')}
+                onClick={() => {
+                  setShowDropdown(false);
+                  navigate('/dashboard');
+                }}
                 className="w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition flex items-center gap-3"
               >
                 <span className="text-lg">📊</span>
@@ -116,6 +119,19 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
                     <span>Saved Jobs</span>
                   </button>
                 </>
+              )}
+
+              {user.user_type === 'recruiter' && (
+                <button
+                  onClick={() => {
+                    setShowDropdown(false);
+                    navigate('/dashboard?tab=find-candidates');
+                  }}
+                  className="w-full px-4 py-3 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition flex items-center gap-3"
+                >
+                  <span className="text-lg">🔍</span>
+                  <span>Find Candidates</span>
+                </button>
               )}
 
               {user.user_type === 'admin' && (

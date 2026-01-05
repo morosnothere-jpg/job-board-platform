@@ -21,6 +21,56 @@ module.exports = (supabase) => {
     }
   });
 
+  // Create job invitation notification
+  router.post('/invite', authenticateToken, async (req, res) => {
+    try {
+      const { candidate_id, job_id } = req.body;
+
+      // Get job details
+      const { data: job, error: jobError } = await supabase
+        .from('jobs')
+        .select('title, company')
+        .eq('id', job_id)
+        .single();
+
+      if (jobError) throw jobError;
+
+      // Get recruiter details
+      const { data: recruiter, error: recruiterError } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', req.user.userId)
+        .single();
+
+      if (recruiterError) throw recruiterError;
+
+      // Create notification
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert([
+          {
+            user_id: candidate_id,
+            type: 'job_invitation',
+            title: `Job Invitation from ${job.company}`,
+            message: `${recruiter.full_name} has invited you to apply for "${job.title}" at ${job.company}.`,
+            job_id: job_id,
+            read: false
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.json({
+        message: 'Invitation sent successfully',
+        notification: data
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Mark notification as read
   router.put('/:id/read', authenticateToken, async (req, res) => {
     try {

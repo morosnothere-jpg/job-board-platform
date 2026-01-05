@@ -30,11 +30,16 @@ export const markAsRead = (id) => api.put(`/notifications/${id}/read`);
 export const markAllAsRead = () => api.put('/notifications/read-all');
 export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 export const deleteAllNotifications = () => api.delete('/notifications/delete-all');
+export const sendJobInvitation = (candidateId, jobId) =>
+  api.post('/notifications/invite', { candidate_id: candidateId, job_id: jobId });
 
 // Profile APIs
 export const getMyProfile = () => api.get('/profiles/me');
 export const getUserProfile = (userId) => api.get(`/profiles/user/${userId}`);
 export const saveProfile = (profileData) => api.post('/profiles', profileData);
+
+// Candidate Search (Recruiters only)
+export const searchCandidates = (search) => api.get('/profiles/search-candidates', { params: { search } });
 
 // Job APIs
 export const getAllJobs = () => api.get('/jobs');
@@ -54,7 +59,7 @@ export const unsaveJob = (jobId) => api.delete(`/saved-jobs/${jobId}`);
 export const applyToJob = (applicationData) => api.post('/applications', applicationData);
 export const getJobApplications = (jobId) => api.get(`/applications/job/${jobId}`);
 export const getMyApplications = () => api.get('/applications/my-applications');
-export const updateApplicationStatus = (id, statusData) => 
+export const updateApplicationStatus = (id, statusData) =>
   api.put(`/applications/${id}/status`, statusData);
 
 // Admin APIs

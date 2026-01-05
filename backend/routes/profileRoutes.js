@@ -21,6 +21,37 @@ module.exports = (supabase) => {
     }
   });
 
+  // Search job seekers (recruiters only) - LIMITED INFO
+  router.get('/search-candidates', authenticateToken, async (req, res) => {
+    try {
+      // Only recruiters can search candidates
+      if (req.user.user_type !== 'recruiter') {
+        return res.status(403).json({ error: 'Only recruiters can search candidates' });
+      }
+
+      const { search = '' } = req.query;
+
+      // Get job seekers only with limited info
+      let query = supabase
+        .from('users')
+        .select('id, full_name, email, avatar')
+        .eq('user_type', 'job_seeker');
+
+      // Search by name or email
+      if (search) {
+        query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
+      }
+
+      const { data, error } = await query.order('full_name', { ascending: true });
+
+      if (error) throw error;
+
+      res.json({ candidates: data });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get any user's profile by user_id (for recruiters to view candidates)
   router.get('/user/:userId', authenticateToken, async (req, res) => {
     try {
