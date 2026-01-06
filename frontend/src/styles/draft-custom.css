@@ -1,0 +1,62 @@
+/* Draft WYSIWYG Dark Mode Support */
+.dark .rdw-editor-toolbar {
+  background-color: #1F2937;
+  border-color: #4B5563;
+}
+
+.dark .rdw-option-wrapper {
+  background-color: #374151;
+  border-color: #4B5563;
+  color: #D1D5DB;
+}
+
+.dark .rdw-option-wrapper:hover {
+  box-shadow: 1px 1px 0px #60A5FA;
+  background-color: #4B5563;
+}
+
+.dark .rdw-option-active {
+  box-shadow: 1px 1px 0px #60A5FA inset;
+  background-color: #4B5563;
+}
+
+.dark .rdw-dropdown-wrapper {
+  background-color: #374151;
+  border-color: #4B5563;
+  color: #D1D5DB;
+}
+
+.dark .rdw-dropdown-optionwrapper {
+  background-color: #374151;
+  border-color: #4B5563;
+}
+
+.dark .rdw-dropdownoption-default {
+  color: #D1D5DB;
+}
+
+.dark .rdw-dropdownoption-highlighted {
+  background-color: #4B5563;
+}
+
+.dark .rdw-editor-main {
+  background-color: #1F2937;
+  color: #F3F4F6;
+}
+
+.dark .public-DraftEditorPlaceholder-root {
+  color: #9CA3AF;
+}
+
+/* General styling */
+.rdw-editor-main {
+  min-height: 200px;
+}
+
+.DraftEditor-root {
+  height: auto;
+}
+
+.public-DraftEditor-content {
+  min-height: 200px;
+}

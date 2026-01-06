@@ -28,7 +28,10 @@ function Home() {
   const [jobMatches, setJobMatches] = useState({});
   const [sortBy, setSortBy] = useState('recommended'); // 'recommended' or 'recent'
   const [showMatchInfo, setShowMatchInfo] = useState(false);
-
+  const stripHtmlAndTruncate = (html, maxLength = 150) => {
+    const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
   useEffect(() => {
     fetchJobs();
     if (user && user.user_type === 'job_seeker') {
@@ -437,8 +440,9 @@ function Home() {
                   {job.salary_range && (
                     <p className="text-secondary dark:text-green-400 font-semibold mb-3">💰 {job.salary_range}</p>
                   )}
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 flex-grow">{job.description}</p>
-
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
+                    {stripHtmlAndTruncate(job.description, 80)}
+                  </p>
                   {/* Match Reasons */}
                   {showAIFeatures && match && match.reasons && match.reasons.length > 0 && (
                     <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">

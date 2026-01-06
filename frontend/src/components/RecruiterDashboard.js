@@ -3,6 +3,7 @@ import { getMyJobs, createJob, deleteJob, getJobApplications, updateApplicationS
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import CandidateSearch from './CandidateSearch';
+import RichTextEditor from './RichTextEditor';
 
 function RecruiterDashboard() {
     const [jobs, setJobs] = useState([]);
@@ -14,7 +15,6 @@ function RecruiterDashboard() {
     const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'my-jobs');
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
-
     const [newJob, setNewJob] = useState({
         title: '',
         description: '',
@@ -25,10 +25,11 @@ function RecruiterDashboard() {
         salary_range: '',
         requirements: ''
     });
-
+    const [expandedJobs, setExpandedJobs] = useState(new Set());
     useEffect(() => {
         fetchMyJobs();
     }, []);
+
     useEffect(() => {
         const tab = searchParams.get('tab');
         if (tab === 'find-candidates') {
@@ -37,6 +38,7 @@ function RecruiterDashboard() {
             setActiveTab('my-jobs');
         }
     }, [searchParams]);
+
     const fetchMyJobs = async () => {
         try {
             const response = await getMyJobs();
@@ -92,34 +94,32 @@ function RecruiterDashboard() {
             alert('Error loading applications');
         }
     };
+    const toggleJobExpansion = (jobId) => {
+        setExpandedJobs(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(jobId)) {
+                newSet.delete(jobId);
+            } else {
+                newSet.add(jobId);
+            }
+            return newSet;
+        });
+    };
 
+    const stripHtmlAndTruncate = (html, maxLength = 200) => {
+        const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    };
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => setActiveTab('my-jobs')}
-                        className={`text-2xl font-bold transition ${activeTab === 'my-jobs'
-                            ? 'text-gray-800 dark:text-gray-100'
-                            : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'
-                            }`}
-                    >
-                        My Job Posts
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('find-candidates')}
-                        className={`text-2xl font-bold transition ${activeTab === 'find-candidates'
-                            ? 'text-gray-800 dark:text-gray-100'
-                            : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'
-                            }`}
-                    >
-                        Find Candidates
-                    </button>
-                </div>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+                    {activeTab === 'my-jobs' ? 'My Job Posts' : 'Find Candidates'}
+                </h1>
                 {activeTab === 'my-jobs' && (
                     <button
                         onClick={() => setShowCreateForm(!showCreateForm)}
-                        className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
+                        className="px-6 py-3 bg-secondary dark:bg-green-600 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-700 transition font-semibold"
                     >
                         {showCreateForm ? 'Cancel' : '+ Post New Job'}
                     </button>
@@ -210,25 +210,19 @@ function RecruiterDashboard() {
 
                                 <div className="mt-4">
                                     <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Job Description *</label>
-                                    <textarea
+                                    <RichTextEditor
                                         value={newJob.description}
-                                        onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
-                                        required
-                                        rows="4"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                        placeholder="Describe the role..."
+                                        onChange={(value) => setNewJob({ ...newJob, description: value })}
+                                        placeholder="Describe the role, responsibilities, and what makes this position great..."
                                     />
                                 </div>
 
                                 <div className="mt-4">
                                     <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Requirements *</label>
-                                    <textarea
+                                    <RichTextEditor
                                         value={newJob.requirements}
-                                        onChange={(e) => setNewJob({ ...newJob, requirements: e.target.value })}
-                                        required
-                                        rows="3"
-                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                                        placeholder="List requirements..."
+                                        onChange={(value) => setNewJob({ ...newJob, requirements: value })}
+                                        placeholder="List required skills, experience, education, etc..."
                                     />
                                 </div>
 
@@ -253,27 +247,50 @@ function RecruiterDashboard() {
                         <div className="grid grid-cols-1 gap-6">
                             {jobs.map((job) => (
                                 <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transition-colors">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{job.title}</h3>
+                                    {/* Top Section: Info + Buttons */}
+                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                                        {/* Left: Job Info */}
+                                        <div className="flex-1 w-full">
+                                            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">{job.title}</h3>
                                             <p className="text-primary dark:text-blue-400 font-semibold">{job.company}</p>
                                             <p className="text-gray-600 dark:text-gray-400">📍 {job.location} • {job.job_type}</p>
                                             {job.salary_range && <p className="text-secondary dark:text-green-400">💰 {job.salary_range}</p>}
-                                            <p className="text-gray-700 dark:text-gray-300 mt-3">{job.description}</p>
                                             <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Posted: {new Date(job.created_at).toLocaleDateString()}</p>
                                         </div>
-                                        <div className="flex flex-col gap-2 ml-4">
+
+                                        {/* Right: Action Buttons */}
+                                        <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
                                             <button
                                                 onClick={() => viewApplications(job)}
-                                                className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition text-sm"
+                                                className="flex-1 sm:flex-none px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition text-sm whitespace-nowrap"
                                             >
                                                 View Applications
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteJob(job.id)}
-                                                className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition text-sm"
+                                                className="flex-1 sm:flex-none px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition text-sm"
                                             >
                                                 Delete
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Section: Description */}
+                                    <div className="border-t dark:border-gray-700 pt-4">
+                                        <div className="text-gray-700 dark:text-gray-300">
+                                            {expandedJobs.has(job.id) ? (
+                                                <div
+                                                    className="prose dark:prose-invert max-w-none"
+                                                    dangerouslySetInnerHTML={{ __html: job.description }}
+                                                />
+                                            ) : (
+                                                <p>{stripHtmlAndTruncate(job.description, 200)}</p>
+                                            )}
+                                            <button
+                                                onClick={() => toggleJobExpansion(job.id)}
+                                                className="text-primary dark:text-blue-400 hover:underline text-sm mt-2 font-semibold"
+                                            >
+                                                {expandedJobs.has(job.id) ? 'View Less' : 'View More'}
                                             </button>
                                         </div>
                                     </div>

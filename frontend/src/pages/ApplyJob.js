@@ -9,7 +9,7 @@ function ApplyJob() {
   const { jobId } = useParams();
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  
+
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -23,7 +23,7 @@ function ApplyJob() {
       navigate('/login');
       return;
     }
-    
+
     if (user.user_type !== 'job_seeker') {
       alert('Only job seekers can apply to jobs');
       navigate('/');
@@ -62,7 +62,7 @@ function ApplyJob() {
         cover_letter: formData.cover_letter || null,
         resume_url: formData.resume_url || null
       });
-      
+
       alert('Application submitted successfully!');
       navigate('/dashboard');
     } catch (error) {
@@ -112,22 +112,28 @@ function ApplyJob() {
               <span>• {job.job_type}</span>
               {job.salary_range && <span>• 💰 {job.salary_range}</span>}
             </div>
-            
+
             <div className="border-t dark:border-gray-700 pt-4">
               <h3 className="font-bold text-base sm:text-lg mb-2 text-gray-800 dark:text-gray-100">Job Description</h3>
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-line">{job.description}</p>
+              <div
+                className="text-sm sm:text-base text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: job.description }}
+              />
             </div>
 
             <div className="border-t dark:border-gray-700 pt-4 mt-4">
               <h3 className="font-bold text-base sm:text-lg mb-2 text-gray-800 dark:text-gray-100">Requirements</h3>
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-line">{job.requirements}</p>
+              <div
+                className="text-sm sm:text-base text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: job.requirements }}
+              />
             </div>
           </div>
 
           {/* Application Form */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-colors">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 sm:mb-6">Submit Your Application</h2>
-            
+
             <form onSubmit={handleSubmit}>
               <div className="mb-6">
                 <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2 text-sm sm:text-base">
