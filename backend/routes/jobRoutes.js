@@ -5,17 +5,57 @@ const { authenticateToken, isRecruiter } = require('../middleware/auth');
 module.exports = (supabase) => {
 
   // Get all jobs (public - anyone can view)
+  // Get all jobs with filtering and pagination
   router.get('/', async (req, res) => {
     try {
-      const { data, error } = await supabase
+      const {
+        page = 1,
+        limit = 12,
+        location = '',
+        job_type = '',
+        work_mode = '',
+        search = ''
+      } = req.query;
+
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      // Start building query
+      let query = supabase
         .from('jobs')
-        .select('*')
-        .eq('status', 'open')
+        .select('*', { count: 'exact' })
+        .eq('status', 'open');
+
+      // Apply filters
+      if (location) {
+        query = query.ilike('location', `%${location}%`);
+      }
+      if (job_type) {
+        query = query.eq('job_type', job_type);
+      }
+      if (work_mode) {
+        query = query.eq('work_mode', work_mode);
+      }
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,company.ilike.%${search}%,description.ilike.%${search}%`);
+      }
+
+      // Apply pagination and ordering
+      const { data, error, count } = await query
+        .range(offset, offset + parseInt(limit) - 1)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      res.json({ jobs: data });
+      res.json({
+        jobs: data,
+        pagination: {
+          totalCount: count,
+          totalPages: Math.ceil(count / parseInt(limit)),
+          currentPage: parseInt(page),
+          limit: parseInt(limit),
+          hasMore: offset + parseInt(limit) < count
+        }
+      });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

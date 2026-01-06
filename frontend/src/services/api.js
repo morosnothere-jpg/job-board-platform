@@ -42,7 +42,7 @@ export const saveProfile = (profileData) => api.post('/profiles', profileData);
 export const searchCandidates = (search) => api.get('/profiles/search-candidates', { params: { search } });
 
 // Job APIs
-export const getAllJobs = () => api.get('/jobs');
+export const getAllJobs = (params) => api.get('/jobs', { params }); 
 export const getJobById = (id) => api.get(`/jobs/${id}`);
 export const createJob = (jobData) => api.post('/jobs', jobData);
 export const getMyJobs = () => api.get('/jobs/my/posts');

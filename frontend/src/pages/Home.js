@@ -11,7 +11,6 @@ import ProfileDropdown from '../components/ProfileDropdown';
 
 function Home() {
   const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -32,16 +31,23 @@ function Home() {
     const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const JOBS_PER_PAGE = 12;
+
   useEffect(() => {
-    fetchJobs();
+    fetchJobs(1, false); // Reset to page 1 when mounting
     if (user && user.user_type === 'job_seeker') {
       fetchUserProfile();
     }
   }, [user]);
 
   useEffect(() => {
-    filterJobs();
-  }, [searchTerm, locationFilter, jobTypeFilter, workModeFilter, jobs, sortBy, jobMatches]);
+    setCurrentPage(1);
+    fetchJobs(1, false); // Reset to page 1 when filters change
+  }, [searchTerm, locationFilter, jobTypeFilter, workModeFilter]);
 
   useEffect(() => {
     if (jobs.length > 0 && user && user.user_type === 'job_seeker') {
@@ -49,15 +55,39 @@ function Home() {
     }
   }, [jobs, user]);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (page = 1, append = false) => {
     try {
-      const response = await getAllJobs();
-      setJobs(response.data.jobs);
-      setFilteredJobs(response.data.jobs);
+      if (!append) setLoading(true);
+      else setLoadingMore(true);
+
+      const params = {
+        page,
+        limit: JOBS_PER_PAGE,
+        location: locationFilter,
+        job_type: jobTypeFilter,
+        work_mode: workModeFilter,
+        search: searchTerm
+      };
+
+      const response = await getAllJobs(params);
+      const newJobs = response.data.jobs;
+      const pagination = response.data.pagination;
+
+      if (append) {
+        setJobs(prev => [...prev, ...newJobs]);
+      } else {
+        setJobs(newJobs);
+      }
+
+      setCurrentPage(pagination.currentPage);
+      setTotalPages(pagination.totalPages);
+      setHasMore(pagination.hasMore);
       setLoading(false);
+      setLoadingMore(false);
     } catch (error) {
       console.error('Error fetching jobs:', error);
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -106,43 +136,6 @@ function Home() {
     } catch (error) {
       console.error('Error checking saved jobs:', error);
     }
-  };
-
-  const filterJobs = () => {
-    let filtered = jobs;
-
-    if (searchTerm) {
-      filtered = filtered.filter(job =>
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (locationFilter) {
-      filtered = filtered.filter(job =>
-        job.location.toLowerCase().includes(locationFilter.toLowerCase())
-      );
-    }
-
-    if (workModeFilter) {
-      filtered = filtered.filter(job => job.work_mode === workModeFilter);
-    }
-
-    // Sort by match score if recommended, otherwise by date
-    if (sortBy === 'recommended' && Object.keys(jobMatches).length > 0) {
-      filtered = [...filtered].sort((a, b) => {
-        const scoreA = jobMatches[a.id]?.score || 0;
-        const scoreB = jobMatches[b.id]?.score || 0;
-        return scoreB - scoreA;
-      });
-    } else {
-      filtered = [...filtered].sort((a, b) =>
-        new Date(b.created_at) - new Date(a.created_at)
-      );
-    }
-
-    setFilteredJobs(filtered);
   };
 
   const clearFilters = () => {
@@ -346,7 +339,7 @@ function Home() {
           {(searchTerm || locationFilter || jobTypeFilter || workModeFilter) && (
             <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {filteredJobs.length} of {jobs.length} jobs
+                Page {currentPage} of {totalPages}
               </p>
               <button
                 onClick={clearFilters}
@@ -362,12 +355,12 @@ function Home() {
       {/* Jobs Listing */}
       <section className="container mx-auto px-4 pb-8 sm:pb-12">
         <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">
-          {sortBy === 'recommended' && showAIFeatures ? '🤖 Recommended For You' : filteredJobs.length === jobs.length ? 'All Jobs' : 'Filtered Results'}
+          {sortBy === 'recommended' && showAIFeatures ? '🤖 Recommended For You' : 'All Jobs'}
         </h2>
 
         {loading ? (
           <p className="text-gray-600 dark:text-gray-400">Loading jobs...</p>
-        ) : filteredJobs.length === 0 ? (
+        ) : jobs.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center transition-colors">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {jobs.length === 0 ? 'No jobs available at the moment.' : 'No jobs match your search criteria.'}
@@ -383,7 +376,7 @@ function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredJobs.map((job) => {
+            {jobs.map((job) => {
               const match = jobMatches[job.id];
               const matchLevel = match ? getMatchLevel(match.score) : null;
 
@@ -467,6 +460,18 @@ function Home() {
                 </div>
               );
             })}
+          </div>
+        )}
+        {/* Load More Button */}
+        {!loading && hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => fetchJobs(currentPage + 1, true)}
+              disabled={loadingMore}
+              className="px-8 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold disabled:opacity-50"
+            >
+              {loadingMore ? 'Loading...' : `Load More Jobs (${currentPage} of ${totalPages})`}
+            </button>
           </div>
         )}
       </section>
