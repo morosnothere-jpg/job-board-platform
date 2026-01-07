@@ -18,7 +18,7 @@ function Profile() {
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isNavigationBlocked, setIsNavigationBlocked] = useState(false);
-  
+
   const [profile, setProfile] = useState({
     bio: '',
     skills: [],
@@ -30,7 +30,7 @@ function Profile() {
     linkedin_url: '',
     github_url: '',
     website_url: '',
-    availability: 'Available',
+    availability: 'immediate',
     expected_salary: ''
   });
 
@@ -47,7 +47,7 @@ function Profile() {
   useEffect(() => {
     // Wait for auth to finish loading
     if (authLoading) return;
-    
+
     if (!user) {
       navigate('/login');
       return;
@@ -142,7 +142,22 @@ function Profile() {
     try {
       const response = await getMyProfile();
       if (response.data.profile) {
-        setProfile(response.data.profile);
+        const data = response.data.profile;
+        // Normalize availability for legacy data
+        const availabilityMap = {
+          'Available': 'immediate',
+          'Available in 2 weeks': '2-weeks',
+          'Available in 1 month': '1-month',
+          'Not actively looking': 'not-available'
+        };
+        if (availabilityMap[data.availability]) {
+          data.availability = availabilityMap[data.availability];
+        } else if (!['immediate', '2-weeks', '1-month', 'not-available'].includes(data.availability)) {
+          // Default if unknown/missing
+          data.availability = 'immediate';
+        }
+
+        setProfile(data);
       }
       setLoading(false);
     } catch (error) {
@@ -158,66 +173,68 @@ function Profile() {
       if (selectedAvatar !== user.avatar) {
         await updateAvatar(selectedAvatar);
       }
-      
+
       // Save profile
       await saveProfile(profile);
       setHasUnsavedChanges(false);
       alert('Profile saved successfully!');
     } catch (error) {
-      alert('Error saving profile: ' + (error.response?.data?.error || error.message));
+      const errorMessage = error.response?.data?.error || error.message;
+      const errorDetails = error.response?.data?.details?.join('\n') || '';
+      alert(`Error saving profile: ${errorMessage}\n${errorDetails}`);
     }
     setSaving(false);
   };
 
   const addSkill = () => {
     if (newSkill.trim()) {
-      setProfile({...profile, skills: [...(profile.skills || []), newSkill.trim()]});
+      setProfile({ ...profile, skills: [...(profile.skills || []), newSkill.trim()] });
       setNewSkill('');
       setHasUnsavedChanges(true);
     }
   };
 
   const removeSkill = (index) => {
-    setProfile({...profile, skills: profile.skills.filter((_, i) => i !== index)});
+    setProfile({ ...profile, skills: profile.skills.filter((_, i) => i !== index) });
     setHasUnsavedChanges(true);
   };
 
   const addExperience = () => {
     if (experienceForm.company && experienceForm.position) {
-      setProfile({...profile, experience: [...(profile.experience || []), experienceForm]});
-      setExperienceForm({company: '', position: '', start_date: '', end_date: '', description: '', current: false});
+      setProfile({ ...profile, experience: [...(profile.experience || []), experienceForm] });
+      setExperienceForm({ company: '', position: '', start_date: '', end_date: '', description: '', current: false });
       setHasUnsavedChanges(true);
     }
   };
 
   const removeExperience = (index) => {
-    setProfile({...profile, experience: profile.experience.filter((_, i) => i !== index)});
+    setProfile({ ...profile, experience: profile.experience.filter((_, i) => i !== index) });
     setHasUnsavedChanges(true);
   };
 
   const addEducation = () => {
     if (educationForm.institution && educationForm.degree) {
-      setProfile({...profile, education: [...(profile.education || []), educationForm]});
-      setEducationForm({institution: '', degree: '', field: '', start_date: '', end_date: '', current: false});
+      setProfile({ ...profile, education: [...(profile.education || []), educationForm] });
+      setEducationForm({ institution: '', degree: '', field: '', start_date: '', end_date: '', current: false });
       setHasUnsavedChanges(true);
     }
   };
 
   const removeEducation = (index) => {
-    setProfile({...profile, education: profile.education.filter((_, i) => i !== index)});
+    setProfile({ ...profile, education: profile.education.filter((_, i) => i !== index) });
     setHasUnsavedChanges(true);
   };
 
   const addPortfolio = () => {
     if (portfolioForm.title && portfolioForm.url) {
-      setProfile({...profile, portfolio_links: [...(profile.portfolio_links || []), portfolioForm]});
-      setPortfolioForm({title: '', url: '', description: ''});
+      setProfile({ ...profile, portfolio_links: [...(profile.portfolio_links || []), portfolioForm] });
+      setPortfolioForm({ title: '', url: '', description: '' });
       setHasUnsavedChanges(true);
     }
   };
 
   const removePortfolio = (index) => {
-    setProfile({...profile, portfolio_links: profile.portfolio_links.filter((_, i) => i !== index)});
+    setProfile({ ...profile, portfolio_links: profile.portfolio_links.filter((_, i) => i !== index) });
     setHasUnsavedChanges(true);
   };
 
@@ -250,8 +267,8 @@ function Profile() {
             <div className="flex gap-3 items-center">
               <DarkModeToggle />
               <NotificationBell />
-              <ProfileDropdown 
-                user={user} 
+              <ProfileDropdown
+                user={user}
                 onLogout={handleLogoutWithWarning}
                 onNavigate={handleNavigationWithWarning}
               />
@@ -263,7 +280,7 @@ function Profile() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">My Profile</h1>
-          <button 
+          <button
             onClick={handleSaveProfile}
             disabled={saving}
             className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold disabled:opacity-50"
@@ -279,8 +296,8 @@ function Profile() {
         )}
 
         {/* Avatar Selection */}
-        <AvatarSelector 
-          currentAvatar={selectedAvatar} 
+        <AvatarSelector
+          currentAvatar={selectedAvatar}
           onSelect={(avatar) => {
             setSelectedAvatar(avatar);
             setHasUnsavedChanges(true);
@@ -290,13 +307,13 @@ function Profile() {
         {/* Basic Info */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Basic Information</h2>
-          
+
           <div className="mb-4">
             <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Bio</label>
             <textarea
               value={profile.bio || ''}
               onChange={(e) => {
-                setProfile({...profile, bio: e.target.value});
+                setProfile({ ...profile, bio: e.target.value });
                 setHasUnsavedChanges(true);
               }}
               rows="4"
@@ -312,7 +329,7 @@ function Profile() {
                 type="text"
                 value={profile.location || ''}
                 onChange={(e) => {
-                  setProfile({...profile, location: e.target.value});
+                  setProfile({ ...profile, location: e.target.value });
                   setHasUnsavedChanges(true);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
@@ -325,15 +342,15 @@ function Profile() {
               <select
                 value={profile.availability || 'Available'}
                 onChange={(e) => {
-                  setProfile({...profile, availability: e.target.value});
+                  setProfile({ ...profile, availability: e.target.value });
                   setHasUnsavedChanges(true);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
-                <option>Available</option>
-                <option>Available in 2 weeks</option>
-                <option>Available in 1 month</option>
-                <option>Not actively looking</option>
+                <option value="immediate">Available</option>
+                <option value="2-weeks">Available in 2 weeks</option>
+                <option value="1-month">Available in 1 month</option>
+                <option value="not-available">Not actively looking</option>
               </select>
             </div>
           </div>
@@ -342,7 +359,7 @@ function Profile() {
         {/* Skills */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Skills</h2>
-          
+
           <div className="flex gap-2 mb-4">
             <input
               type="text"
@@ -350,7 +367,7 @@ function Profile() {
               onChange={(e) => setNewSkill(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               className="flex-1 min-w-0 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              placeholder="Add a skill"
+              placeholder="Add a skill, language..."
             />
             <button onClick={addSkill} type="button" className="px-4 py-2 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 whitespace-nowrap flex-shrink-0">
               Add
@@ -370,34 +387,34 @@ function Profile() {
         {/* Experience */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Work Experience</h2>
-          
+
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"
                 value={experienceForm.company}
-                onChange={(e) => setExperienceForm({...experienceForm, company: e.target.value})}
+                onChange={(e) => setExperienceForm({ ...experienceForm, company: e.target.value })}
                 placeholder="Company"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="text"
                 value={experienceForm.position}
-                onChange={(e) => setExperienceForm({...experienceForm, position: e.target.value})}
+                onChange={(e) => setExperienceForm({ ...experienceForm, position: e.target.value })}
                 placeholder="Position"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="month"
                 value={experienceForm.start_date}
-                onChange={(e) => setExperienceForm({...experienceForm, start_date: e.target.value})}
+                onChange={(e) => setExperienceForm({ ...experienceForm, start_date: e.target.value })}
                 placeholder="Start Date"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <input
                 type="month"
                 value={experienceForm.end_date}
-                onChange={(e) => setExperienceForm({...experienceForm, end_date: e.target.value})}
+                onChange={(e) => setExperienceForm({ ...experienceForm, end_date: e.target.value })}
                 placeholder="End Date"
                 disabled={experienceForm.current}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-600"
@@ -407,14 +424,14 @@ function Profile() {
               <input
                 type="checkbox"
                 checked={experienceForm.current}
-                onChange={(e) => setExperienceForm({...experienceForm, current: e.target.checked, end_date: e.target.checked ? '' : experienceForm.end_date})}
+                onChange={(e) => setExperienceForm({ ...experienceForm, current: e.target.checked, end_date: e.target.checked ? '' : experienceForm.end_date })}
                 className="bg-white dark:bg-gray-700"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">I currently work here</span>
             </label>
             <textarea
               value={experienceForm.description}
-              onChange={(e) => setExperienceForm({...experienceForm, description: e.target.value})}
+              onChange={(e) => setExperienceForm({ ...experienceForm, description: e.target.value })}
               placeholder="Description"
               rows="3"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -448,41 +465,41 @@ function Profile() {
         {/* Education */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Education</h2>
-          
+
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <input
                 type="text"
                 value={educationForm.institution}
-                onChange={(e) => setEducationForm({...educationForm, institution: e.target.value})}
+                onChange={(e) => setEducationForm({ ...educationForm, institution: e.target.value })}
                 placeholder="Institution"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="text"
                 value={educationForm.degree}
-                onChange={(e) => setEducationForm({...educationForm, degree: e.target.value})}
+                onChange={(e) => setEducationForm({ ...educationForm, degree: e.target.value })}
                 placeholder="Degree"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="text"
                 value={educationForm.field}
-                onChange={(e) => setEducationForm({...educationForm, field: e.target.value})}
+                onChange={(e) => setEducationForm({ ...educationForm, field: e.target.value })}
                 placeholder="Field of Study"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="month"
                 value={educationForm.start_date}
-                onChange={(e) => setEducationForm({...educationForm, start_date: e.target.value})}
+                onChange={(e) => setEducationForm({ ...educationForm, start_date: e.target.value })}
                 placeholder="Start Date"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <input
                 type="month"
                 value={educationForm.end_date}
-                onChange={(e) => setEducationForm({...educationForm, end_date: e.target.value})}
+                onChange={(e) => setEducationForm({ ...educationForm, end_date: e.target.value })}
                 placeholder="End Date"
                 disabled={educationForm.current}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-600"
@@ -492,7 +509,7 @@ function Profile() {
               <input
                 type="checkbox"
                 checked={educationForm.current}
-                onChange={(e) => setEducationForm({...educationForm, current: e.target.checked, end_date: e.target.checked ? '' : educationForm.end_date})}
+                onChange={(e) => setEducationForm({ ...educationForm, current: e.target.checked, end_date: e.target.checked ? '' : educationForm.end_date })}
                 className="bg-white dark:bg-gray-700"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">I'm currently studying here</span>
@@ -526,26 +543,26 @@ function Profile() {
         {/* Portfolio Links */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Portfolio & Projects</h2>
-          
+
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
             <div className="grid grid-cols-1 gap-4 mb-4">
               <input
                 type="text"
                 value={portfolioForm.title}
-                onChange={(e) => setPortfolioForm({...portfolioForm, title: e.target.value})}
+                onChange={(e) => setPortfolioForm({ ...portfolioForm, title: e.target.value })}
                 placeholder="Project Title"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <input
                 type="url"
                 value={portfolioForm.url}
-                onChange={(e) => setPortfolioForm({...portfolioForm, url: e.target.value})}
+                onChange={(e) => setPortfolioForm({ ...portfolioForm, url: e.target.value })}
                 placeholder="URL (https://...)"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
               <textarea
                 value={portfolioForm.description}
-                onChange={(e) => setPortfolioForm({...portfolioForm, description: e.target.value})}
+                onChange={(e) => setPortfolioForm({ ...portfolioForm, description: e.target.value })}
                 placeholder="Description"
                 rows="2"
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -579,7 +596,7 @@ function Profile() {
         {/* Social Links */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-colors">
           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Links</h2>
-          
+
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Resume/CV Link</label>
@@ -587,7 +604,7 @@ function Profile() {
                 type="url"
                 value={profile.resume_link || ''}
                 onChange={(e) => {
-                  setProfile({...profile, resume_link: e.target.value});
+                  setProfile({ ...profile, resume_link: e.target.value });
                   setHasUnsavedChanges(true);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -601,7 +618,7 @@ function Profile() {
                 type="url"
                 value={profile.linkedin_url || ''}
                 onChange={(e) => {
-                  setProfile({...profile, linkedin_url: e.target.value});
+                  setProfile({ ...profile, linkedin_url: e.target.value });
                   setHasUnsavedChanges(true);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -615,7 +632,7 @@ function Profile() {
                 type="url"
                 value={profile.github_url || ''}
                 onChange={(e) => {
-                  setProfile({...profile, github_url: e.target.value});
+                  setProfile({ ...profile, github_url: e.target.value });
                   setHasUnsavedChanges(true);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -629,7 +646,7 @@ function Profile() {
                 type="url"
                 value={profile.website_url || ''}
                 onChange={(e) => {
-                  setProfile({...profile, website_url: e.target.value});
+                  setProfile({ ...profile, website_url: e.target.value });
                   setHasUnsavedChanges(true);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
@@ -639,7 +656,7 @@ function Profile() {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={handleSaveProfile}
           disabled={saving}
           className="w-full py-4 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold text-lg disabled:opacity-50"

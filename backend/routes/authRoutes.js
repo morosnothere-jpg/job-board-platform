@@ -3,12 +3,12 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { authenticateToken } = require('../middleware/auth');
-
+const { validateRegister, validateLogin } = require('../middleware/validators');
 // We'll pass supabase from server.js
 module.exports = (supabase) => {
-  
+
   // Register new user
-  router.post('/register', async (req, res) => {
+  router.post('/register', validateRegister, async (req, res) => {
     try {
       const { email, password, full_name, user_type, phone, company_name } = req.body;
 
@@ -70,7 +70,7 @@ module.exports = (supabase) => {
   });
 
   // Login user
-  router.post('/login', async (req, res) => {
+  router.post('/login', validateLogin, async (req, res) => {
     try {
       const { email, password } = req.body;
 

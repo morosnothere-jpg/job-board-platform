@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken, isRecruiter } = require('../middleware/auth');
+const { validateCreateJob, validateUpdateJob } = require('../middleware/validators');
 
 module.exports = (supabase) => {
 
@@ -79,7 +80,7 @@ module.exports = (supabase) => {
   });
 
   // Create new job (recruiter only)
-  router.post('/', authenticateToken, isRecruiter, async (req, res) => {
+  router.post('/', authenticateToken, isRecruiter, validateCreateJob, async (req, res) => {
     try {
       const { title, description, company, location, job_type, work_mode, salary_range, requirements } = req.body;
       const { data, error } = await supabase
@@ -130,7 +131,7 @@ module.exports = (supabase) => {
   });
 
   // Update job (recruiter only - their own jobs)
-  router.put('/:id', authenticateToken, isRecruiter, async (req, res) => {
+  router.put('/:id', authenticateToken, isRecruiter, validateUpdateJob, async (req, res) => {
     try {
       const { title, description, company, location, job_type, work_mode, salary_range, requirements, status } = req.body;
       const { data, error } = await supabase

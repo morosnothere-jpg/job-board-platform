@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, isJobSeeker } = require('../middleware/auth');
 const { sendApplicationNotification, sendStatusUpdateNotification } = require('../services/emailService');
-
+const { validateApplication } = require('../middleware/validators');
 module.exports = (supabase) => {
 
     // Apply to a job (job seekers only)
-    router.post('/', authenticateToken, async (req, res) => {
+    router.post('/', authenticateToken, isJobSeeker, validateApplication, async (req, res) => {
         try {
             const { job_id, cover_letter, resume_url } = req.body;
 

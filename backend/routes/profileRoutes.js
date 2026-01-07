@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
-
+const { validateProfile } = require('../middleware/validators');
 module.exports = (supabase) => {
 
   // Get user's own profile
@@ -71,9 +71,9 @@ module.exports = (supabase) => {
       if (profileError && profileError.code !== 'PGRST116') throw profileError;
       if (userError) throw userError;
 
-      res.json({ 
+      res.json({
         profile: profile || null,
-        user: user 
+        user: user
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -81,7 +81,7 @@ module.exports = (supabase) => {
   });
 
   // Create or Update profile
-  router.post('/', authenticateToken, async (req, res) => {
+  router.post('/', authenticateToken, validateProfile, async (req, res) => {
     try {
       const {
         bio,
@@ -129,7 +129,7 @@ module.exports = (supabase) => {
           .eq('user_id', req.user.userId)
           .select()
           .single();
-        
+
         data = result.data;
         error = result.error;
       } else {
@@ -153,7 +153,7 @@ module.exports = (supabase) => {
           }])
           .select()
           .single();
-        
+
         data = result.data;
         error = result.error;
       }

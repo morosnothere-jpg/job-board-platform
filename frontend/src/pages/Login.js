@@ -1,97 +1,150 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import DarkModeToggle from '../components/DarkModeToggle';
+import { login as loginAPI } from '../services/api';
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+  // Real-time email validation
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Real-time validation
+  useEffect(() => {
+    const newErrors = {};
+
+    if (touched.email && email) {
+      if (!validateEmail(email)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    }
+
+    if (touched.password && !password) {
+      newErrors.password = 'Password is required';
+    }
+
+    setErrors(newErrors);
+  }, [email, password, touched]);
+
+  const handleBlur = (field) => {
+    setTouched({
+      ...touched,
+      [field]: true
     });
+  };
+
+  const isFormValid = () => {
+    return validateEmail(email) && password.length > 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
+
+    // Mark all fields as touched
+    setTouched({
+      email: true,
+      password: true
+    });
+
+    if (!isFormValid()) {
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      await login(formData.email, formData.password);
-      navigate('/'); // Redirect to home page
-    } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
-      setLoading(false);
+      const response = await loginAPI({ email, password });
+      login(response.data.token, response.data.user);
+      navigate('/');
+    } catch (error) {
+      alert(error.response?.data?.error || 'Login failed. Please check your credentials.');
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-700 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4 transition-colors">
-      <div className="absolute top-4 right-4">
-        <DarkModeToggle />
-      </div>
-      
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-md transition-colors">
-        <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Login to JobBoard</h2>
-        
-        {error && (
-          <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Email</label>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 py-8 transition-colors">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome Back</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Sign in to your JobBoard account</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sm:p-8 space-y-5 transition-colors">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email
+            </label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="your@email.com"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => handleBlur('email')}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                errors.email && touched.email
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+              }`}
+              placeholder="name@email.com"
             />
+            {errors.email && touched.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
 
-          <div className="mb-6">
-            <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Password</label>
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Password
+            </label>
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Enter your password"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => handleBlur('password')}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
+                errors.password && touched.password
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+              }`}
+              placeholder="••••••••"
             />
+            {errors.password && touched.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
           </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-primary dark:bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold disabled:opacity-50"
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={!isFormValid() || isSubmitting}
+            className="w-full bg-primary dark:bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {isSubmitting ? 'Signing In...' : 'Sign In'}
           </button>
-        </form>
 
-        <p className="text-center text-gray-600 dark:text-gray-400 mt-6">
-          Don't have an account? <Link to="/register" className="text-primary dark:text-blue-400 font-semibold hover:underline">Sign up here</Link>
-        </p>
-        <p className="text-center text-gray-600 dark:text-gray-400 mt-2">
-          <Link to="/" className="text-primary dark:text-blue-400 hover:underline">← Back to Home</Link>
-        </p>
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+            Don't have an account?{' '}
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              className="text-primary dark:text-blue-400 hover:underline font-semibold"
+            >
+              Sign Up
+            </button>
+          </p>
+        </form>
       </div>
     </div>
   );

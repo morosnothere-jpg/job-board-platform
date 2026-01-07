@@ -23,7 +23,12 @@ const isRecruiter = (req, res, next) => {
   }
   next();
 };
-
+const isJobSeeker = (req, res, next) => {
+  if (req.user.user_type !== 'job_seeker') {
+    return res.status(403).json({ error: 'Access denied. Job seekers only.' });
+  }
+  next();
+};
 const isAdmin = (req, res, next) => {
   if (req.user.user_type !== 'admin') {
     return res.status(403).json({ error: 'Only admins can perform this action' });
@@ -31,4 +36,4 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { authenticateToken, isRecruiter, isAdmin };
+module.exports = { authenticateToken, isRecruiter, isJobSeeker, isAdmin };
