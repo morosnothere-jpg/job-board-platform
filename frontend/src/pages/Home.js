@@ -1,15 +1,22 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { getAllJobs, saveJob, unsaveJob, checkIfJobSaved } from '../services/api';
+import { getAllJobs, saveJob, unsaveJob, checkIfJobSaved, getRecommendedJobs } from '../services/api';
 import { getMyProfile } from '../services/api';
-import { calculateJobMatch, getMatchLevel } from '../utils/jobMatchingAlgorithm';
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
 import AvatarDisplay from '../components/AvatarDisplay';
 import ProfileDropdown from '../components/ProfileDropdown';
 import { toast } from 'sonner';
 
+// Helper function for match badge colors
+const getMatchLevel = (percentage) => {
+  if (percentage >= 85) return { level: 'Excellent', color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900' };
+  if (percentage >= 70) return { level: 'Great', color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900' };
+  if (percentage >= 55) return { level: 'Good', color: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-100 dark:bg-yellow-900' };
+  if (percentage >= 40) return { level: 'Fair', color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900' };
+  return { level: 'Low', color: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-100 dark:bg-gray-700' };
+};
 function Home() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,9 +30,6 @@ function Home() {
   const [savedJobIds, setSavedJobIds] = useState(new Set());
 
   // AI Matching state
-  const [userProfile, setUserProfile] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [jobMatches, setJobMatches] = useState({});
   const [sortBy, setSortBy] = useState('recommended'); // 'recommended' or 'recent'
   const [showMatchInfo, setShowMatchInfo] = useState(false);
   const stripHtmlAndTruncate = (html, maxLength = 150) => {
@@ -39,11 +43,8 @@ function Home() {
   const JOBS_PER_PAGE = 12;
 
   useEffect(() => {
-    fetchJobs(1, false); // Reset to page 1 when mounting
-    if (user && user.user_type === 'job_seeker') {
-      fetchUserProfile();
-    }
-  }, [user]);
+    fetchJobs(1, false);
+  }, [user, sortBy]); // Add sortBy as dependency
 
   useEffect(() => {
     setCurrentPage(1);
@@ -71,7 +72,13 @@ function Home() {
       if (workModeFilter) params.work_mode = workModeFilter;
       if (searchTerm) params.search = searchTerm;
 
-      const response = await getAllJobs(params);
+      // Use backend AI matching when in "recommended" mode and user has profile
+      const useBackendMatching = sortBy === 'recommended' && showAIFeatures;
+
+      const response = useBackendMatching
+        ? await getRecommendedJobs(params)  // Backend AI matching
+        : await getAllJobs(params);          // Regular jobs
+
       const newJobs = response.data.jobs;
       const pagination = response.data.pagination;
 
@@ -92,36 +99,6 @@ function Home() {
       setLoadingMore(false);
     }
   };
-
-  const fetchUserProfile = async () => {
-    try {
-      const response = await getMyProfile();
-      if (response.data.profile) {
-        setUserProfile(response.data.profile);
-        calculateAllMatches(jobs, response.data.profile);
-      }
-      setProfileLoading(false);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      setProfileLoading(false);
-    }
-  };
-
-  const calculateAllMatches = (jobsList, profile) => {
-    if (!profile) return;
-
-    const matches = {};
-    jobsList.forEach(job => {
-      matches[job.id] = calculateJobMatch(profile, job);
-    });
-    setJobMatches(matches);
-  };
-
-  useEffect(() => {
-    if (userProfile && jobs.length > 0) {
-      calculateAllMatches(jobs, userProfile);
-    }
-  }, [jobs, userProfile]);
 
   const checkSavedJobs = async (jobs) => {
     if (!user || user.user_type !== 'job_seeker') return;
@@ -192,7 +169,7 @@ function Home() {
   const userTypeDisplay = user ? (user.user_type === 'recruiter' ? '[Recruiter]' : '[Freelancer]') : '';
   const firstName = user ? user.full_name.split(' ')[0] : '';
 
-  const showAIFeatures = user && user.user_type === 'job_seeker' && userProfile;
+  const showAIFeatures = user && user.user_type === 'job_seeker';
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -238,7 +215,7 @@ function Home() {
       </section>
 
       {/* AI Profile Prompt */}
-      {user && user.user_type === 'job_seeker' && !profileLoading && !userProfile && (
+      {user && user.user_type === 'job_seeker' && !showAIFeatures && (
         <section className="container mx-auto px-4 py-6">
           <div className="bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-800 dark:to-pink-800 rounded-lg shadow-md p-6 text-white">
             <div className="flex items-start gap-4">
@@ -378,102 +355,93 @@ function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Client-side sorting for AI Match */}
-            {(() => {
-              // Sort jobs by match score if in recommended mode
-              const displayJobs = sortBy === 'recommended' && showAIFeatures
-                ? [...jobs].sort((a, b) => {
-                  const scoreA = jobMatches[a.id]?.score || 0;
-                  const scoreB = jobMatches[b.id]?.score || 0;
-                  return scoreB - scoreA; // Highest score first
-                })
-                : jobs;
+            {jobs.map((job) => {
+              // Backend already provides match_score and match_reasons
+              const matchScore = job.match_score || 0;
+              const matchReasons = job.match_reasons || [];
+              const matchLevel = matchScore > 0 ? getMatchLevel(matchScore) : null;
 
-              return displayJobs.map((job) => {
-                const match = jobMatches[job.id];
-                const matchLevel = match ? getMatchLevel(match.score) : null;
-
-                return (
-                  <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-xl transition relative flex flex-col">
-                    {/* Save Button */}
-                    {user && user.user_type === 'job_seeker' && (
-                      <button
-                        onClick={(e) => handleSaveJob(e, job.id)}
-                        className="absolute top-4 right-4 text-2xl hover:scale-110 transition z-10"
-                        title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job'}
-                      >
-                        {savedJobIds.has(job.id) ? (
-                          <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          <svg className="w-6 h-6 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                          </svg>
-                        )}
-                      </button>
-                    )}
-
-                    {/* AI Match Badge */}
-                    {showAIFeatures && match && match.score > 0 && (
-                      <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 ${matchLevel.bgColor} ${matchLevel.color} w-fit`}>
-                        <span>{match.score}%</span>
-                        <span>{matchLevel.level} Match</span>
-                      </div>
-                    )}
-
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">{job.title}</h3>
-                    <p className="text-primary dark:text-blue-400 font-semibold mb-2">{job.company}</p>
-                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
-                      <span className="mr-2">📍</span>
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="flex gap-2 mb-3">
-                      <span className="inline-block bg-blue-100 dark:bg-blue-900 text-primary dark:text-blue-300 px-3 py-1 rounded-full text-sm w-fit">
-                        {job.job_type}
-                      </span>
-                      {job.work_mode && (
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm w-fit ${job.work_mode === 'remote' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' :
-                          job.work_mode === 'hybrid' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300' :
-                            'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
-                          }`}>
-                          {job.work_mode === 'remote' ? '🏠 Remote' :
-                            job.work_mode === 'hybrid' ? '🔄 Hybrid' :
-                              '🏢 On-site'}
-                        </span>
-                      )}
-                    </div>
-                    {job.salary_range && (
-                      <p className="text-secondary dark:text-green-400 font-semibold mb-3">💰 {job.salary_range}</p>
-                    )}
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
-                      {stripHtmlAndTruncate(job.description, 80)}
-                    </p>
-                    {/* Match Reasons */}
-                    {showAIFeatures && match && match.reasons && match.reasons.length > 0 && (
-                      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">Why this job:</p>
-                        <ul className="space-y-1">
-                          {match.reasons.map((reason, idx) => (
-                            <li key={idx} className="text-xs text-blue-700 dark:text-blue-400 flex items-start gap-2">
-                              <span>✓</span>
-                              <span>{reason}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
+              return (
+                <div key={job.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-xl transition relative flex flex-col">
+                  {/* Save Button */}
+                  {user && user.user_type === 'job_seeker' && (
                     <button
-                      onClick={() => handleApply(job.id)}
-                      className="w-full bg-primary dark:bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
+                      onClick={(e) => handleSaveJob(e, job.id)}
+                      className="absolute top-4 right-4 text-2xl hover:scale-110 transition z-10"
+                      title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job'}
                     >
-                      Apply Now
+                      {savedJobIds.has(job.id) ? (
+                        <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg className="w-6 h-6 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      )}
                     </button>
+                  )}
+
+                  {/* AI Match Badge */}
+                  {showAIFeatures && matchScore > 0 && (
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 ${matchLevel.bgColor} ${matchLevel.color} w-fit`}>
+                      <span>{matchScore}%</span>
+                      <span>{matchLevel.level} Match</span>
+                    </div>
+                  )}
+
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">{job.title}</h3>
+                  <p className="text-primary dark:text-blue-400 font-semibold mb-2">{job.company}</p>
+                  <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                    <span className="mr-2">📍</span>
+                    <span>{job.location}</span>
                   </div>
-                );
-              })
-            })()}
+                  <div className="flex gap-2 mb-3">
+                    <span className="inline-block bg-blue-100 dark:bg-blue-900 text-primary dark:text-blue-300 px-3 py-1 rounded-full text-sm w-fit">
+                      {job.job_type}
+                    </span>
+                    {job.work_mode && (
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm w-fit ${job.work_mode === 'remote' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' :
+                        job.work_mode === 'hybrid' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300' :
+                          'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                        }`}>
+                        {job.work_mode === 'remote' ? '🏠 Remote' :
+                          job.work_mode === 'hybrid' ? '🔄 Hybrid' :
+                            '🏢 On-site'}
+                      </span>
+                    )}
+                  </div>
+                  {job.salary_range && (
+                    <p className="text-secondary dark:text-green-400 font-semibold mb-3">💰 {job.salary_range}</p>
+                  )}
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 flex-grow">
+                    {stripHtmlAndTruncate(job.description, 80)}
+                  </p>
+
+                  {/* Match Reasons */}
+                  {showAIFeatures && matchReasons.length > 0 && (
+                    <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">Why this job:</p>
+                      <ul className="space-y-1">
+                        {matchReasons.map((reason, idx) => (
+                          <li key={idx} className="text-xs text-blue-700 dark:text-blue-400 flex items-start gap-2">
+                            <span>✓</span>
+                            <span>{reason}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => handleApply(job.id)}
+                    className="w-full bg-primary dark:bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
+                  >
+                    Apply Now
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
         {/* Load More Button */}

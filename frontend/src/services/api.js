@@ -44,6 +44,7 @@ export const searchCandidates = (search) => api.get('/profiles/search-candidates
 
 // Job APIs
 export const getAllJobs = (params) => api.get('/jobs', { params });
+export const getRecommendedJobs = (params) => api.get('/jobs/recommended', { params }); // NEW: Backend AI matching
 export const getJobById = (id) => api.get(`/jobs/${id}`);
 export const createJob = (jobData) => api.post('/jobs', jobData);
 export const getMyJobs = () => api.get('/jobs/my/posts');

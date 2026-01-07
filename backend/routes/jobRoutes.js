@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken, isRecruiter } = require('../middleware/auth');
 const { validateCreateJob, validateUpdateJob } = require('../middleware/validators');
+const { calculateJobMatch } = require('../utils/jobMatchingAlgorithm');
 
 module.exports = (supabase) => {
 
-  // Get all jobs (public - anyone can view)
   // Get all jobs with filtering and pagination
   router.get('/', async (req, res) => {
     try {
@@ -58,6 +58,89 @@ module.exports = (supabase) => {
         }
       });
     } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // NEW: Get AI-recommended jobs (job seekers only)
+  router.get('/recommended', authenticateToken, async (req, res) => {
+    try {
+      // Only job seekers can get recommendations
+      if (req.user.user_type !== 'job_seeker') {
+        return res.status(403).json({ error: 'Only job seekers can get recommendations' });
+      }
+
+      const {
+        page = 1,
+        limit = 12,
+        location = '',
+        job_type = '',
+        work_mode = '',
+        search = ''
+      } = req.query;
+
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', req.user.userId)
+        .single();
+
+      if (profileError || !profile) {
+        return res.status(400).json({ 
+          error: 'Please complete your profile to get recommendations',
+          needsProfile: true 
+        });
+      }
+
+      // Fetch ALL open jobs (with filters if provided)
+      let query = supabase
+        .from('jobs')
+        .select('*', { count: 'exact' })
+        .eq('status', 'open');
+
+      // Apply filters
+      if (location) query = query.ilike('location', `%${location}%`);
+      if (job_type) query = query.eq('job_type', job_type);
+      if (work_mode) query = query.eq('work_mode', work_mode);
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,company.ilike.%${search}%,description.ilike.%${search}%`);
+      }
+
+      const { data: allJobs, error: jobsError, count } = await query;
+
+      if (jobsError) throw jobsError;
+
+      // Calculate match score for each job
+      const jobsWithScores = allJobs.map(job => {
+        const match = calculateJobMatch(profile, job);
+        return {
+          ...job,
+          match_score: match.score,
+          match_reasons: match.reasons
+        };
+      });
+
+      // Sort by match score (highest first)
+      jobsWithScores.sort((a, b) => b.match_score - a.match_score);
+
+      // Apply pagination AFTER sorting
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      const paginatedJobs = jobsWithScores.slice(offset, offset + parseInt(limit));
+
+      res.json({
+        jobs: paginatedJobs,
+        pagination: {
+          totalCount: count,
+          totalPages: Math.ceil(count / parseInt(limit)),
+          currentPage: parseInt(page),
+          limit: parseInt(limit),
+          hasMore: offset + parseInt(limit) < count
+        }
+      });
+
+    } catch (error) {
+      console.error('Error getting recommendations:', error);
       res.status(500).json({ error: error.message });
     }
   });
