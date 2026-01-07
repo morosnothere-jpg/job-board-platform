@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCookie } from '../utils/cookieUtils';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -12,7 +13,7 @@ const api = axios.create({
 
 // Add token to requests automatically
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = getCookie('token'); // Read from cookie instead
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -42,7 +43,7 @@ export const saveProfile = (profileData) => api.post('/profiles', profileData);
 export const searchCandidates = (search) => api.get('/profiles/search-candidates', { params: { search } });
 
 // Job APIs
-export const getAllJobs = (params) => api.get('/jobs', { params }); 
+export const getAllJobs = (params) => api.get('/jobs', { params });
 export const getJobById = (id) => api.get(`/jobs/${id}`);
 export const createJob = (jobData) => api.post('/jobs', jobData);
 export const getMyJobs = () => api.get('/jobs/my/posts');

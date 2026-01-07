@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { register } from '../services/api';
 import { toast } from 'sonner';
+import DarkModeToggle from '../components/DarkModeToggle';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -137,6 +138,9 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 py-8 transition-colors">
+      <div className="absolute top-4 right-4">
+        <DarkModeToggle />
+      </div>
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Create Account</h2>
@@ -156,8 +160,8 @@ function Register() {
               onChange={handleChange}
               onBlur={() => handleBlur('full_name')}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${errors.full_name && touched.full_name
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
                 }`}
               placeholder="John Doe"
             />
@@ -178,8 +182,8 @@ function Register() {
               onChange={handleChange}
               onBlur={() => handleBlur('email')}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${errors.email && touched.email
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
                 }`}
               placeholder="name@email.com"
             />
@@ -200,8 +204,8 @@ function Register() {
               onChange={handleChange}
               onBlur={() => handleBlur('password')}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${errors.password && touched.password
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
                 }`}
               placeholder="••••••••"
             />
@@ -251,8 +255,8 @@ function Register() {
             </label>
             <div className="grid grid-cols-2 gap-4">
               <label className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition ${formData.user_type === 'job_seeker'
-                  ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
+                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
                 }`}>
                 <input
                   type="radio"
@@ -266,8 +270,8 @@ function Register() {
               </label>
 
               <label className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition ${formData.user_type === 'recruiter'
-                  ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
-                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                ? 'border-primary bg-blue-50 dark:bg-blue-900/20'
+                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
                 }`}>
                 <input
                   type="radio"
@@ -295,8 +299,8 @@ function Register() {
                 onChange={handleChange}
                 onBlur={() => handleBlur('company_name')}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${errors.company_name && touched.company_name
-                    ? 'border-red-500 focus:ring-red-500'
-                    : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
                   }`}
                 placeholder="Your Company Inc."
               />

@@ -2,12 +2,16 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { toast } from 'sonner';
+import DarkModeToggle from '../components/DarkModeToggle';
+
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [rememberMe, setRememberMe] = useState(false);
 
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -63,7 +67,7 @@ function Login() {
     try {
       // Call the API directly first to handle errors locally, or let AuthContext throw
       // AuthContext.login calls the API and updates state. It should throw on error.
-      await login(email, password);
+      await login(email, password, rememberMe);
       // If successful, redirect
       navigate('/');
     } catch (error) {
@@ -84,6 +88,9 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 py-8 transition-colors">
+      <div className="absolute top-4 right-4">
+        <DarkModeToggle />
+      </div>
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome Back</h2>
@@ -131,6 +138,21 @@ function Login() {
             {errors.password && touched.password && (
               <p className="text-red-500 text-sm mt-1">{errors.password}</p>
             )}
+          </div>
+
+          {/* Keep me signed in */}
+          <div className="flex items-center">
+            <input
+              id="remember_me"
+              name="remember_me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+            />
+            <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+              Keep me signed in
+            </label>
           </div>
 
           {/* Submit Button */}
