@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAdminJobs, deleteAdminJob, updateJobStatus } from '../../services/api';
+import { toast } from 'sonner';
 
 function JobsManagement() {
   const [jobs, setJobs] = useState([]);
@@ -40,10 +41,10 @@ function JobsManagement() {
 
     try {
       await deleteAdminJob(jobId, reason || undefined);
-      alert('Job deleted successfully' + (reason ? ' and notification email sent to recruiter' : ''));
+      toast.success(reason ? 'Job deleted and recruiter notified! 📧' : 'Job deleted! 🗑️');
       fetchJobs();
     } catch (error) {
-      alert('Error deleting job: ' + (error.response?.data?.error || error.message));
+      toast.error('Error deleting job: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -54,15 +55,15 @@ function JobsManagement() {
 
     try {
       await updateJobStatus(jobId, newStatus);
-      alert('Job status updated successfully');
+      toast.success('Job status updated! ✅');
       fetchJobs();
     } catch (error) {
-      alert('Error updating job: ' + (error.response?.data?.error || error.message));
+      toast.error('Error updating job: ' + (error.response?.data?.error || error.message));
     }
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'open': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700';
       case 'closed': return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 border-red-300 dark:border-red-700';
       case 'filled': return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700';
@@ -126,7 +127,7 @@ function JobsManagement() {
                       {job.salary_range && <span>• 💰 {job.salary_range}</span>}
                     </div>
                   </div>
-                  
+
                   <select
                     value={job.status}
                     onChange={(e) => handleUpdateStatus(job.id, e.target.value, job.title)}
@@ -149,7 +150,7 @@ function JobsManagement() {
                       {new Date(job.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  
+
                   <button
                     onClick={() => handleDeleteJob(job.id, job.title)}
                     className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700 transition font-semibold"

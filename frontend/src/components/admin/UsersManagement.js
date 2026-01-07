@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUsers, deleteUser, updateUserType } from '../../services/api';
-
+import { toast } from 'sonner';
 function UsersManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,13 +37,13 @@ function UsersManagement() {
 
     // Ask for reason
     const reason = prompt(`Please provide a reason for terminating ${userName}'s account (optional):`);
-    
+
     try {
       await deleteUser(userId, reason || undefined);
-      alert('User deleted successfully' + (reason ? ' and notification email sent' : ''));
+      toast.success(reason ? 'User deleted and notified! 📧' : 'User deleted! 🗑️');
       fetchUsers();
     } catch (error) {
-      alert('Error deleting user: ' + (error.response?.data?.error || error.message));
+      toast.error('Error deleting user: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -54,10 +54,10 @@ function UsersManagement() {
 
     try {
       await updateUserType(userId, newType);
-      alert('User type updated successfully');
+      toast.success('User type updated! ✅');
       fetchUsers();
     } catch (error) {
-      alert('Error updating user: ' + (error.response?.data?.error || error.message));
+      toast.error('Error updating user: ' + (error.response?.data?.error || error.message));
     }
   };
 

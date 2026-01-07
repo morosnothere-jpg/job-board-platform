@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import CandidateSearch from './CandidateSearch';
 import RichTextEditor from './RichTextEditor';
+import { toast } from 'sonner';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
 
 function RecruiterDashboard() {
     const [jobs, setJobs] = useState([]);
@@ -66,9 +68,15 @@ function RecruiterDashboard() {
                 requirements: ''
             });
             fetchMyJobs();
-            alert('Job posted successfully!');
+            toast.success('Job posted successfully! 🎉');
         } catch (error) {
-            alert('Error creating job: ' + (error.response?.data?.error || error.message));
+            const errorMessage = error.response?.data?.error || error.message;
+            const errorDetails = error.response?.data?.details;
+            if (errorDetails && errorDetails.length > 0) {
+                toast.error(errorDetails[0]);
+            } else {
+                toast.error('Error creating job: ' + errorMessage);
+            }
         }
     };
 
@@ -77,9 +85,9 @@ function RecruiterDashboard() {
             try {
                 await deleteJob(jobId);
                 fetchMyJobs();
-                alert('Job deleted successfully!');
+                toast.success('Job deleted! 🗑️');
             } catch (error) {
-                alert('Error deleting job: ' + (error.response?.data?.error || error.message));
+                toast.error('Error deleting job: ' + (error.response?.data?.error || error.message));
             }
         }
     };
@@ -91,7 +99,7 @@ function RecruiterDashboard() {
             setApplications(response.data.applications);
         } catch (error) {
             console.error('Error fetching applications:', error);
-            alert('Error loading applications');
+            toast.error('Error loading applications');
         }
     };
     const toggleJobExpansion = (jobId) => {
@@ -281,7 +289,7 @@ function RecruiterDashboard() {
                                             {expandedJobs.has(job.id) ? (
                                                 <div
                                                     className="prose dark:prose-invert max-w-none"
-                                                    dangerouslySetInnerHTML={{ __html: job.description }}
+                                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(job.description) }}
                                                 />
                                             ) : (
                                                 <p>{stripHtmlAndTruncate(job.description, 200)}</p>
@@ -390,12 +398,12 @@ function StatusDropdown({ applicationId, currentStatus, onStatusChange }) {
         setUpdating(true);
         try {
             await updateApplicationStatus(applicationId, { status, notes });
-            alert('Application status updated successfully!');
+            toast.success('Application status updated! ✅');
             setShowNotesModal(false);
             setNotes('');
             onStatusChange();
         } catch (error) {
-            alert('Error updating status: ' + (error.response?.data?.error || error.message));
+            toast.error('Error updating status: ' + (error.response?.data?.error || error.message));
             setStatus(currentStatus);
         }
         setUpdating(false);

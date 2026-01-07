@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { getNotifications, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -74,7 +75,7 @@ function NotificationBell() {
       fetchNotifications();
     } catch (error) {
       console.error('Error deleting notification:', error);
-      alert('Failed to delete notification');
+      toast.error('Failed to delete notification');
     } finally {
       setDeletingIds(prev => {
         const newSet = new Set(prev);
@@ -94,7 +95,7 @@ function NotificationBell() {
       fetchNotifications();
     } catch (error) {
       console.error('Error deleting all notifications:', error);
-      alert('Failed to delete all notifications');
+      toast.error('Failed to delete all notifications');
     }
   };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { searchCandidates, sendJobInvitation } from '../services/api';
 import AvatarDisplay from './AvatarDisplay';
-
+import { toast } from 'sonner';
 function CandidateSearch({ myJobs }) {
     const [candidates, setCandidates] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -46,19 +46,19 @@ function CandidateSearch({ myJobs }) {
 
     const handleInvite = async () => {
         if (!selectedJob) {
-            alert('Please select a job to invite the candidate to');
+            toast.error('Please select a job first');
             return;
         }
 
         setSending(true);
         try {
             await sendJobInvitation(selectedCandidate.id, selectedJob);
-            alert(`Invitation sent to ${selectedCandidate.full_name} successfully! 🎉`);
+            toast.success(`Invitation sent to ${selectedCandidate.full_name}! 🎉`);
             setShowInviteModal(false);
             setSelectedJob('');
             setSelectedCandidate(null);
         } catch (error) {
-            alert('Error sending invitation: ' + (error.response?.data?.error || error.message));
+            toast.error('Error sending invitation: ' + (error.response?.data?.error || error.message));
         }
         setSending(false);
     };

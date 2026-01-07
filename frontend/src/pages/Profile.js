@@ -7,6 +7,7 @@ import DarkModeToggle from '../components/DarkModeToggle';
 import AvatarSelector from '../components/AvatarSelector';
 import AvatarDisplay from '../components/AvatarDisplay';
 import ProfileDropdown from '../components/ProfileDropdown';
+import { toast } from 'sonner';
 
 function Profile() {
   const { user, logout, updateAvatar, loading: authLoading } = useContext(AuthContext);
@@ -53,7 +54,7 @@ function Profile() {
       return;
     }
     if (user.user_type !== 'job_seeker') {
-      alert('Only job seekers can create profiles');
+      toast.error('Only job seekers can create profiles');
       navigate('/dashboard');
       return;
     }
@@ -177,11 +178,15 @@ function Profile() {
       // Save profile
       await saveProfile(profile);
       setHasUnsavedChanges(false);
-      alert('Profile saved successfully!');
+      toast.success('Profile saved successfully! 🎉');
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.message;
-      const errorDetails = error.response?.data?.details?.join('\n') || '';
-      alert(`Error saving profile: ${errorMessage}\n${errorDetails}`);
+      const errorDetails = error.response?.data?.details;
+      if (errorDetails && errorDetails.length > 0) {
+        toast.error(errorDetails[0]);
+      } else {
+        toast.error(`Error saving profile: ${errorMessage}`);
+      }
     }
     setSaving(false);
   };

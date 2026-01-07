@@ -4,6 +4,8 @@ import { AuthContext } from '../context/AuthContext';
 import { getJobById, applyToJob } from '../services/api';
 import DarkModeToggle from '../components/DarkModeToggle';
 import ProfileDropdown from '../components/ProfileDropdown';
+import { toast } from 'sonner';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
 
 function ApplyJob() {
   const { jobId } = useParams();
@@ -25,7 +27,7 @@ function ApplyJob() {
     }
 
     if (user.user_type !== 'job_seeker') {
-      alert('Only job seekers can apply to jobs');
+      toast.error('Only job seekers can apply to jobs');
       navigate('/');
       return;
     }
@@ -40,7 +42,7 @@ function ApplyJob() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching job:', error);
-      alert('Job not found');
+      toast.error('Job not found');
       navigate('/');
     }
   };
@@ -63,11 +65,11 @@ function ApplyJob() {
         resume_url: formData.resume_url || null
       });
 
-      alert('Application submitted successfully!');
+      toast.success('Application submitted! 🎉');
       navigate('/dashboard');
     } catch (error) {
       const errorMsg = error.response?.data?.error || 'Failed to submit application';
-      alert(errorMsg);
+      toast.error(errorMsg);
       setSubmitting(false);
     }
   };
@@ -117,7 +119,7 @@ function ApplyJob() {
               <h3 className="font-bold text-base sm:text-lg mb-2 text-gray-800 dark:text-gray-100">Job Description</h3>
               <div
                 className="text-sm sm:text-base text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: job.description }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(job.description) }}
               />
             </div>
 
@@ -125,7 +127,7 @@ function ApplyJob() {
               <h3 className="font-bold text-base sm:text-lg mb-2 text-gray-800 dark:text-gray-100">Requirements</h3>
               <div
                 className="text-sm sm:text-base text-gray-700 dark:text-gray-300 prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: job.requirements }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(job.requirements) }}
               />
             </div>
           </div>

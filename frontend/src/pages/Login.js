@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { login as loginAPI } from '../services/api';
-
+import { toast } from 'sonner';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -50,7 +49,6 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mark all fields as touched
     setTouched({
       email: true,
       password: true
@@ -63,11 +61,23 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      const response = await loginAPI({ email, password });
-      login(response.data.token, response.data.user);
+      // Call the API directly first to handle errors locally, or let AuthContext throw
+      // AuthContext.login calls the API and updates state. It should throw on error.
+      await login(email, password);
+      // If successful, redirect
       navigate('/');
     } catch (error) {
-      alert(error.response?.data?.error || 'Login failed. Please check your credentials.');
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.error || 'Invalid email or password';
+
+      // If backend sends validation details (array), show the first one
+      const errorDetails = error.response?.data?.details;
+      if (errorDetails && Array.isArray(errorDetails) && errorDetails.length > 0) {
+        toast.error(errorDetails[0]);
+      } else {
+        toast.error(errorMessage);
+      }
+
       setIsSubmitting(false);
     }
   };
@@ -91,11 +101,10 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => handleBlur('email')}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                errors.email && touched.email
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${errors.email && touched.email
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                }`}
               placeholder="name@email.com"
             />
             {errors.email && touched.email && (
@@ -113,11 +122,10 @@ function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onBlur={() => handleBlur('password')}
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${
-                errors.password && touched.password
-                  ? 'border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 ${errors.password && touched.password
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 dark:border-gray-600 focus:ring-primary'
+                }`}
               placeholder="••••••••"
             />
             {errors.password && touched.password && (

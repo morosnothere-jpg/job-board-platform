@@ -5,7 +5,7 @@ import { getSavedJobs, unsaveJob } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
 import ProfileDropdown from '../components/ProfileDropdown';
-
+import { toast } from 'sonner';
 function SavedJobs() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ function SavedJobs() {
       return;
     }
     if (user.user_type !== 'job_seeker') {
-      alert('Only job seekers can save jobs');
+      toast.error('Only job seekers can save jobs');
       navigate('/dashboard');
       return;
     }
@@ -44,7 +44,7 @@ function SavedJobs() {
       await unsaveJob(jobId);
       setSavedJobs(savedJobs.filter(sj => sj.job_id !== jobId));
     } catch (error) {
-      alert('Error unsaving job');
+      toast.error('Error unsaving job');
     }
   };
 
@@ -97,7 +97,7 @@ function SavedJobs() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center transition-colors">
             <p className="text-gray-600 dark:text-gray-400 mb-4">You haven't saved any jobs yet.</p>
             <p className="text-gray-500 dark:text-gray-500 mb-6">Click the heart icon on any job to save it for later!</p>
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="px-6 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
             >
@@ -123,7 +123,7 @@ function SavedJobs() {
                       </svg>
                     </button>
                   </div>
-                  
+
                   <p className="text-primary dark:text-blue-400 font-semibold mb-2">{job.company}</p>
                   <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
                     <span className="mr-2">📍</span>
@@ -136,13 +136,13 @@ function SavedJobs() {
                     <p className="text-secondary dark:text-green-400 font-semibold mb-3">💰 {job.salary_range}</p>
                   )}
                   <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">{job.description}</p>
-                  
+
                   <p className="text-xs text-gray-500 dark:text-gray-500 mb-4">
                     Saved on {new Date(savedJob.created_at).toLocaleDateString()}
                   </p>
 
-                  <button 
-                    onClick={() => handleApply(job.id)} 
+                  <button
+                    onClick={() => handleApply(job.id)}
                     className="w-full bg-primary dark:bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold"
                   >
                     Apply Now

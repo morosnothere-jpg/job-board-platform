@@ -8,7 +8,7 @@ import ProfileDropdown from '../components/ProfileDropdown';
 import UsersManagement from '../components/admin/UsersManagement';
 import JobsManagement from '../components/admin/JobsManagement';
 import ApplicationsManagement from '../components/admin/ApplicationsManagement';
-
+import { toast } from 'sonner';
 function AdminDashboard() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function AdminDashboard() {
       return;
     }
     if (user.user_type !== 'admin') {
-      alert('Access denied: Admin only');
+      toast.error('Access denied: Admin only');
       navigate('/');
       return;
     }
@@ -87,11 +87,10 @@ function AdminDashboard() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition ${
-                activeTab === tab
+              className={`px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition ${activeTab === tab
                   ? 'bg-primary dark:bg-blue-600 text-white'
                   : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
+                }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>

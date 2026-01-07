@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getUserProfile } from '../services/api';
 import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
-
+import { toast } from 'sonner';
 function ViewProfile() {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ function ViewProfile() {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching profile:', error);
-      alert('Could not load profile');
+      toast.error('Could not load profile');
       navigate(-1);
     }
   };
