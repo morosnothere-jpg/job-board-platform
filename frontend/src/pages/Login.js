@@ -140,17 +140,19 @@ function Login() {
             )}
           </div>
 
-          {/* Keep me signed in */}
-          <div className="flex items-center">
-            <input
-              id="remember_me"
-              name="remember_me"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-            />
-            <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
+          {/* Keep me signed in (Custom Modern Checkbox) */}
+          <div className="flex items-center cursor-pointer group" onClick={() => setRememberMe(!rememberMe)}>
+            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${rememberMe
+                ? 'bg-primary border-primary dark:bg-blue-600 dark:border-blue-600'
+                : 'bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-500 group-hover:border-primary'
+              }`}>
+              {rememberMe && (
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">
               Keep me signed in
             </label>
           </div>
