@@ -3,6 +3,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
+const monetizationRoutes = require('./routes/monetizationRoutes');
+const initCronJobs = require('./utils/cronJobs');
+
+// Initialize Cron Jobs
+initCronJobs();
 
 const app = express();
 
@@ -75,6 +80,8 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const savedJobsRoutes = require('./routes/savedJobsRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+
+app.use('/api/monetization', monetizationRoutes);
 
 // Auth routes with strict rate limiting
 app.use('/api/auth/login', authLimiter); // 5 attempts per 15 min

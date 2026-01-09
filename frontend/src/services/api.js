@@ -64,6 +64,75 @@ export const getMyApplications = () => api.get('/applications/my-applications');
 export const updateApplicationStatus = (id, statusData) =>
   api.put(`/applications/${id}/status`, statusData);
 
+// ============================================
+// MONETIZATION API ENDPOINTS
+// Add these to your existing api.js file
+// ============================================
+
+// ==========================================
+// SUBSCRIPTION ENDPOINTS (Job Seekers)
+// ==========================================
+
+/**
+ * Get available subscription plans
+ */
+export const getSubscriptionPlans = () => {
+  return api.get('/api/monetization/subscription/plans');
+};
+
+/**
+ * Get current user's subscription status
+ */
+export const getSubscriptionStatus = () => {
+  return api.get('/api/monetization/subscription/status');
+};
+
+/**
+ * Purchase a subscription plan
+ * @param {number} planId - The ID of the plan to purchase
+ */
+export const purchaseSubscription = (planId) => {
+  return api.post('/api/monetization/subscription/purchase', { planId });
+};
+
+// ==========================================
+// CREDIT ENDPOINTS (Recruiters)
+// ==========================================
+
+/**
+ * Get available credit packages
+ */
+export const getCreditPackages = () => {
+  return api.get('/api/monetization/credits/packages');
+};
+
+/**
+ * Get current user's credit balance
+ */
+export const getCreditBalance = () => {
+  return api.get('/api/monetization/credits/balance');
+};
+
+/**
+ * Purchase a credit package
+ * @param {number} packageId - The ID of the package to purchase
+ */
+export const purchaseCredits = (packageId) => {
+  return api.post('/api/monetization/credits/purchase', { packageId });
+};
+
+// ==========================================
+// PAYMENT VERIFICATION
+// ==========================================
+
+/**
+ * Check payment status
+ * @param {number} paymentId - The ID of the payment to check
+ */
+export const checkPaymentStatus = (paymentId) => {
+  return api.get(`/api/monetization/payment/${paymentId}/status`);
+};
+
 // Admin APIs
 export const getAdminStats = () => api.get('/admin/stats');
 export const getAllUsers = (params) => api.get('/admin/users', { params });

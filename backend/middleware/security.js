@@ -26,8 +26,6 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   // Slow down requests as they approach the limit
-  skipSuccessfulRequests: false, // Count successful requests
-  skipFailedRequests: false // Count failed requests too
 });
 
 // Moderate rate limiter for account creation - 3 per hour
@@ -49,12 +47,7 @@ const jobPostingLimiter = rateLimit({
     error: 'Too many jobs posted, please try again after an hour.'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  // Only apply to authenticated users (token-based)
-  keyGenerator: (req) => {
-    // Use user ID from token if available, otherwise IP
-    return req.user?.userId || req.ip;
-  }
+  legacyHeaders: false
 });
 
 // Rate limiter for job applications - 20 per day
@@ -65,10 +58,7 @@ const applicationLimiter = rateLimit({
     error: 'Too many applications submitted today, please try again tomorrow.'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.userId || req.ip;
-  }
+  legacyHeaders: false
 });
 
 // Rate limiter for notification/invitation sending - 30 per hour
@@ -79,10 +69,7 @@ const notificationLimiter = rateLimit({
     error: 'Too many invitations sent, please try again later.'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.userId || req.ip;
-  }
+  legacyHeaders: false
 });
 
 // Rate limiter for profile updates - 20 per hour
@@ -93,10 +80,7 @@ const profileUpdateLimiter = rateLimit({
     error: 'Too many profile updates, please try again later.'
   },
   standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.user?.userId || req.ip;
-  }
+  legacyHeaders: false
 });
 
 module.exports = {

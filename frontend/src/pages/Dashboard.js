@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import RecruiterDashboard from '../components/RecruiterDashboard';
 import JobSeekerDashboard from '../components/JobSeekerDashboard';
@@ -7,10 +7,28 @@ import NotificationBell from '../components/NotificationBell';
 import DarkModeToggle from '../components/DarkModeToggle';
 import AvatarDisplay from '../components/AvatarDisplay';
 import ProfileDropdown from '../components/ProfileDropdown';
+import CreditCounter from '../components/CreditCounter';
+import CreditPurchaseModal from '../components/CreditPurchaseModal';
+import { getCreditBalance } from '../services/api';
 
 function Dashboard() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [creditInfo, setCreditInfo] = useState({ balance: 0, isFirstPurchase: false });
+
+  React.useEffect(() => {
+    if (user && user.user_type === 'recruiter') {
+      getCreditBalance()
+        .then(response => {
+          setCreditInfo({
+            balance: response.data.credits.balance || 0,
+            isFirstPurchase: response.data.credits.isFirstPurchase
+          });
+        })
+        .catch(error => console.error('Error fetching credits:', error));
+    }
+  }, [user]);
 
   if (!user) {
     navigate('/login');
@@ -29,6 +47,12 @@ function Dashboard() {
             <h2 className="text-lg sm:text-2xl font-bold text-primary dark:text-blue-400">JobBoard</h2>
             <div className="flex items-center gap-3">
               <DarkModeToggle />
+
+              {/* Credit Counter for Recruiters */}
+              {user.user_type === 'recruiter' && (
+                <CreditCounter onPurchaseClick={() => setShowPurchaseModal(true)} />
+              )}
+
               <NotificationBell />
               <ProfileDropdown user={user} onLogout={logout} />
             </div>
@@ -44,6 +68,16 @@ function Dashboard() {
           <JobSeekerDashboard />
         )}
       </div>
+
+      {/* Credit Purchase Modal */}
+      {user.user_type === 'recruiter' && (
+        <CreditPurchaseModal
+          isOpen={showPurchaseModal}
+          onClose={() => setShowPurchaseModal(false)}
+          currentBalance={creditInfo.balance}
+          isFirstPurchase={creditInfo.isFirstPurchase}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const { validateProfile } = require('../middleware/validators');
+const { checkCandidateSearchAccess } = require('../middleware/monetizationMiddleware');
+
 module.exports = (supabase) => {
 
   // Get user's own profile
@@ -22,7 +24,8 @@ module.exports = (supabase) => {
   });
 
   // Search job seekers (recruiters only) - LIMITED INFO
-  router.get('/search-candidates', authenticateToken, async (req, res) => {
+  // Use checkCandidateSearchAccess to verify credits
+  router.get('/search-candidates', authenticateToken, checkCandidateSearchAccess, async (req, res) => {
     try {
       // Only recruiters can search candidates
       if (req.user.user_type !== 'recruiter') {

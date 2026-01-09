@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticateToken, isRecruiter } = require('../middleware/auth');
 const { validateCreateJob, validateUpdateJob } = require('../middleware/validators');
 const { calculateJobMatch } = require('../utils/jobMatchingAlgorithm');
+const { checkCreditsForJobPost, deductCreditsForJobPost } = require('../middleware/monetizationMiddleware');
 
 module.exports = (supabase) => {
 
@@ -87,9 +88,9 @@ module.exports = (supabase) => {
         .single();
 
       if (profileError || !profile) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Please complete your profile to get recommendations',
-          needsProfile: true 
+          needsProfile: true
         });
       }
 
@@ -163,7 +164,8 @@ module.exports = (supabase) => {
   });
 
   // Create new job (recruiter only)
-  router.post('/', authenticateToken, isRecruiter, validateCreateJob, async (req, res) => {
+  // Use checkCreditsForJobPost middleware to verify credits BEFORE creating job
+  router.post('/', authenticateToken, isRecruiter, validateCreateJob, checkCreditsForJobPost, async (req, res) => {
     try {
       const { title, description, company, location, job_type, work_mode, salary_range, requirements } = req.body;
       const { data, error } = await supabase
@@ -186,6 +188,16 @@ module.exports = (supabase) => {
         .single();
 
       if (error) throw error;
+
+      // Deduct credits after successful job creation
+      if (req.user.user_type === 'recruiter') {
+        try {
+          await deductCreditsForJobPost(data.id, req.user.userId);
+        } catch (creditError) {
+          // Log error but don't fail the request since job is already created
+          console.error('Failed to deduct credits:', creditError);
+        }
+      }
 
       res.status(201).json({
         message: 'Job posted successfully',

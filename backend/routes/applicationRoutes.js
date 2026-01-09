@@ -3,10 +3,12 @@ const router = express.Router();
 const { authenticateToken, isJobSeeker } = require('../middleware/auth');
 const { sendApplicationNotification, sendStatusUpdateNotification } = require('../services/emailService');
 const { validateApplication } = require('../middleware/validators');
+const { checkApplicationLimit, incrementApplicationCount } = require('../middleware/monetizationMiddleware');
+
 module.exports = (supabase) => {
 
     // Apply to a job (job seekers only)
-    router.post('/', authenticateToken, isJobSeeker, validateApplication, async (req, res) => {
+    router.post('/', authenticateToken, isJobSeeker, validateApplication, checkApplicationLimit, async (req, res) => {
         try {
             const { job_id, cover_letter, resume_url } = req.body;
 
@@ -43,6 +45,9 @@ module.exports = (supabase) => {
                 .single();
 
             if (error) throw error;
+
+            // Increment application usage count
+            await incrementApplicationCount(req.user.userId);
 
             // Get job and recruiter info
             const { data: job } = await supabase
@@ -84,7 +89,8 @@ module.exports = (supabase) => {
 
             res.status(201).json({
                 message: 'Application submitted successfully',
-                application: data
+                application: data,
+                limitInfo: req.applicationInfo // Return limit info to frontend
             });
 
         } catch (error) {
