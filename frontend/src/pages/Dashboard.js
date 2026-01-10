@@ -3,32 +3,12 @@ import { AuthContext } from '../context/AuthContext';
 import RecruiterDashboard from '../components/RecruiterDashboard';
 import JobSeekerDashboard from '../components/JobSeekerDashboard';
 import { useNavigate } from 'react-router-dom';
-import NotificationBell from '../components/NotificationBell';
-import DarkModeToggle from '../components/DarkModeToggle';
-import AvatarDisplay from '../components/AvatarDisplay';
-import ProfileDropdown from '../components/ProfileDropdown';
-import CreditCounter from '../components/CreditCounter';
-import CreditPurchaseModal from '../components/CreditPurchaseModal';
-import { getCreditBalance } from '../services/api';
+import Navbar from '../components/Navbar';
 
 function Dashboard() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [creditInfo, setCreditInfo] = useState({ balance: 0, isFirstPurchase: false });
 
-  React.useEffect(() => {
-    if (user && user.user_type === 'recruiter') {
-      getCreditBalance()
-        .then(response => {
-          setCreditInfo({
-            balance: response.data.credits.balance || 0,
-            isFirstPurchase: response.data.credits.isFirstPurchase
-          });
-        })
-        .catch(error => console.error('Error fetching credits:', error));
-    }
-  }, [user]);
 
   if (!user) {
     navigate('/login');
@@ -41,27 +21,13 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Top Navigation */}
-      <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg sm:text-2xl font-bold text-primary dark:text-blue-400">JobBoard</h2>
-            <div className="flex items-center gap-3">
-              <DarkModeToggle />
-
-              {/* Credit Counter for Recruiters */}
-              {user.user_type === 'recruiter' && (
-                <CreditCounter onPurchaseClick={() => setShowPurchaseModal(true)} />
-              )}
-
-              <NotificationBell />
-              <ProfileDropdown user={user} onLogout={logout} />
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Top Navigation */}
+      <Navbar />
 
       {/* Dashboard Content */}
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+
+
         {user.user_type === 'recruiter' ? (
           <RecruiterDashboard />
         ) : (
@@ -70,14 +36,7 @@ function Dashboard() {
       </div>
 
       {/* Credit Purchase Modal */}
-      {user.user_type === 'recruiter' && (
-        <CreditPurchaseModal
-          isOpen={showPurchaseModal}
-          onClose={() => setShowPurchaseModal(false)}
-          currentBalance={creditInfo.balance}
-          isFirstPurchase={creditInfo.isFirstPurchase}
-        />
-      )}
+
     </div>
   );
 }

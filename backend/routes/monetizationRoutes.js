@@ -15,16 +15,37 @@ const paymobService = require('../utils/paymobService');
  * GET /api/monetization/subscription/plans
  * Get available subscription plans
  */
-router.get('/subscription/plans', async (req, res) => {
+router.get('/subscription/plans', protect, async (req, res) => {
     try {
+        const userId = req.user.userId;
+
+        // Check if user has ever been premium
+        const hasBeenPremium = await checkIfWasPremiumBefore(userId);
+
+        // Fetch plans
         const result = await pool.query(
             'SELECT * FROM subscription_plans WHERE user_type = $1 AND is_active = true ORDER BY price_egp ASC',
             ['job_seeker']
         );
 
+        // Calculate personalized pricing for each plan
+        const plans = result.rows.map(plan => {
+            const isEligibleForFirstTime = !hasBeenPremium;
+            const finalPrice = isEligibleForFirstTime ? (plan.first_time_price_egp || plan.price_egp) : plan.price_egp;
+
+            return {
+                ...plan,
+                final_price: finalPrice,
+                is_first_time_offer: isEligibleForFirstTime && (plan.first_time_price_egp && plan.first_time_price_egp < plan.price_egp),
+                original_price: plan.price_egp,
+                savings: isEligibleForFirstTime && plan.first_time_price_egp ? (plan.price_egp - plan.first_time_price_egp) : 0
+            };
+        });
+
         res.json({
             success: true,
-            plans: result.rows
+            plans: plans,
+            isEligibleForFirstTime: !hasBeenPremium
         });
     } catch (error) {
         console.error('Error fetching plans:', error);

@@ -2,11 +2,8 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useNavigate, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { getMyProfile, saveProfile } from '../services/api';
-import NotificationBell from '../components/NotificationBell';
-import DarkModeToggle from '../components/DarkModeToggle';
+import Navbar from '../components/Navbar';
 import AvatarSelector from '../components/AvatarSelector';
-import AvatarDisplay from '../components/AvatarDisplay';
-import ProfileDropdown from '../components/ProfileDropdown';
 import { toast } from 'sonner';
 
 function Profile() {
@@ -27,6 +24,7 @@ function Profile() {
     education: [],
     portfolio_links: [],
     resume_link: '',
+    voice_intro_url: '',
     location: '',
     linkedin_url: '',
     github_url: '',
@@ -168,6 +166,11 @@ function Profile() {
   };
 
   const handleSaveProfile = async () => {
+    if (profile.voice_intro_url && !profile.voice_intro_url.startsWith('https://vocaroo.com/')) {
+      toast.error('Voice Introduction must be a valid Vocaroo link (https://vocaroo.com/...)');
+      return;
+    }
+
     setSaving(true);
     try {
       // Update avatar if changed
@@ -263,24 +266,8 @@ function Profile() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => handleNavigationWithWarning('/')}>
-              JobBoard
-            </h1>
-            <div className="flex gap-3 items-center">
-              <DarkModeToggle />
-              <NotificationBell />
-              <ProfileDropdown
-                user={user}
-                onLogout={handleLogoutWithWarning}
-                onNavigate={handleNavigationWithWarning}
-              />
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Navigation */}
+      <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
@@ -614,6 +601,20 @@ function Profile() {
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="Link to your resume (Google Drive, Dropbox, etc.)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Voice Introduction</label>
+              <input
+                type="url"
+                value={profile.voice_intro_url || ''}
+                onChange={(e) => {
+                  setProfile({ ...profile, voice_intro_url: e.target.value });
+                  setHasUnsavedChanges(true);
+                }}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                placeholder="https://vocaroo.com/1g****PW"
               />
             </div>
 

@@ -16,7 +16,16 @@ function App() {
     <Router>
       <div className="App">
         <>
-          <Toaster position="top-right" richColors />
+          <Toaster
+            position="top-right"
+            richColors
+            closeButton
+            toastOptions={{
+              classNames: {
+                closeButton: '!bg-red-500 !text-white !border-red-600 hover:!bg-red-600 !left-auto !right-2 !top-1/2 !-translate-y-1/2'
+              }
+            }}
+          />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />

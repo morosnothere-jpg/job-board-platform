@@ -16,7 +16,22 @@ function PremiumUpgradeModal({ isOpen, onClose, currentTier }) {
     const fetchPlans = async () => {
         try {
             const response = await getSubscriptionPlans();
-            setPlans(response.data.plans);
+            const allPlans = response.data.plans;
+
+            // Deduplicate plans: Keep only the best offer for each duration
+            const bestPlansMap = new Map();
+
+            allPlans.forEach(plan => {
+                const duration = plan.duration_months;
+                if (!bestPlansMap.has(duration) || plan.final_price < bestPlansMap.get(duration).final_price) {
+                    bestPlansMap.set(duration, plan);
+                }
+            });
+
+            // Convert map back to array and sort by price
+            const uniquePlans = Array.from(bestPlansMap.values()).sort((a, b) => a.final_price - b.final_price);
+
+            setPlans(uniquePlans);
         } catch (error) {
             console.error('Error fetching plans:', error);
             toast.error('Failed to load subscription plans');
@@ -66,8 +81,8 @@ function PremiumUpgradeModal({ isOpen, onClose, currentTier }) {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-700 dark:to-purple-800 text-white p-6 rounded-t-2xl">
+                {/* Header - Removed sticky top-0 to fix scrolling issue */}
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-700 dark:to-purple-800 text-white p-6 rounded-t-2xl relative">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-1 transition"
@@ -114,26 +129,29 @@ function PremiumUpgradeModal({ isOpen, onClose, currentTier }) {
 
                 {/* Plans */}
                 <div className="p-6">
-                    <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+                    {/* <h3 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
                         {isPremium ? '📅 Renew Subscription' : '💎 Choose Your Plan'}
-                    </h3>
+                    </h3> */}
                     <div className="space-y-4">
                         {plans.map((plan) => {
-                            const isFirstTime = plan.name.includes('First Time');
-                            const price = isFirstTime ? plan.first_time_price_egp : plan.price_egp;
+                            const isFirstTime = plan.is_first_time_offer;
+                            const price = plan.final_price;
+                            const originalPrice = plan.original_price;
+                            const savings = plan.savings;
                             const pricePerMonth = (price / plan.duration_months).toFixed(0);
 
                             return (
                                 <div
                                     key={plan.id}
-                                    className={`border-2 rounded-xl p-6 transition ${isFirstTime
-                                            ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
-                                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-600'
+                                    className={`border-2 rounded-xl p-4 sm:p-6 transition ${isFirstTime
+                                        ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
+                                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-600'
                                         }`}
                                 >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
+                                    {/* Mobile-first: Stack vertically */}
+                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                 <h4 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                                                     {plan.duration_months} Months
                                                 </h4>
@@ -147,13 +165,18 @@ function PremiumUpgradeModal({ isOpen, onClose, currentTier }) {
                                                 ~{pricePerMonth} EGP per month
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <div className="text-3xl font-bold text-primary dark:text-blue-400">
-                                                {price} EGP
+
+                                        {/* Price - Centered on mobile, right-aligned on desktop */}
+                                        <div className="text-center sm:text-right">
+                                            <div className="text-3xl sm:text-4xl font-bold text-primary dark:text-blue-400">
+                                                {parseFloat(price).toFixed(2)}
                                             </div>
-                                            {isFirstTime && plan.price_egp !== price && (
-                                                <div className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                                                    {plan.price_egp} EGP
+                                            <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                                EGP
+                                            </div>
+                                            {isFirstTime && originalPrice > price && (
+                                                <div className="text-sm text-gray-500 dark:text-gray-400 line-through mt-1">
+                                                    {parseFloat(originalPrice).toFixed(2)} EGP
                                                 </div>
                                             )}
                                         </div>
@@ -163,8 +186,8 @@ function PremiumUpgradeModal({ isOpen, onClose, currentTier }) {
                                         onClick={() => handlePurchase(plan.id)}
                                         disabled={loading && selectedPlan === plan.id}
                                         className={`w-full py-3 rounded-lg font-semibold transition ${isFirstTime
-                                                ? 'bg-green-600 hover:bg-green-700 text-white'
-                                                : 'bg-primary dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white'
+                                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                                            : 'bg-primary dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white'
                                             } disabled:opacity-50`}
                                     >
                                         {loading && selectedPlan === plan.id ? (
@@ -176,13 +199,13 @@ function PremiumUpgradeModal({ isOpen, onClose, currentTier }) {
                                                 Processing...
                                             </span>
                                         ) : (
-                                            `Purchase for ${price} EGP`
+                                            `Purchase for ${parseFloat(price).toFixed(2)} EGP`
                                         )}
                                     </button>
 
-                                    {isFirstTime && (
+                                    {isFirstTime && savings > 0 && (
                                         <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-2">
-                                            💡 Save {plan.price_egp - price} EGP on your first purchase!
+                                            💡 Save {parseFloat(savings).toFixed(2)} EGP on your first purchase!
                                         </p>
                                     )}
                                 </div>

@@ -9,8 +9,8 @@ import AvatarDisplay from '../components/AvatarDisplay';
 import ProfileDropdown from '../components/ProfileDropdown';
 import ApplicationCounter from '../components/ApplicationCounter';
 import NativeAd from '../components/NativeAd';
-import PremiumUpgradeModal from '../components/PremiumUpgradeModal';
 import { toast } from 'sonner';
+import Navbar from '../components/Navbar';
 
 // Helper function for match badge colors
 const getMatchLevel = (percentage) => {
@@ -23,8 +23,10 @@ const getMatchLevel = (percentage) => {
 function Home() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const showAIFeatures = user && user.user_type === 'job_seeker';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
@@ -33,7 +35,7 @@ function Home() {
   const [savedJobIds, setSavedJobIds] = useState(new Set());
 
   // Monetization state
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  // const [showUpgradeModal, setShowUpgradeModal] = useState(false); // Moved to Navbar
   const [isPremium, setIsPremium] = useState(false);
 
   // AI Matching state
@@ -50,8 +52,10 @@ function Home() {
   const JOBS_PER_PAGE = 12;
 
   useEffect(() => {
-    fetchJobs(1, false);
-  }, [user, sortBy]); // Add sortBy as dependency
+    if (!authLoading) {
+      fetchJobs(1, false);
+    }
+  }, [user, sortBy, authLoading]); // Add sortBy as dependency
 
   useEffect(() => {
     setCurrentPage(1);
@@ -184,48 +188,13 @@ function Home() {
 
   const userTypeDisplay = user ? (user.user_type === 'recruiter' ? '[Recruiter]' : '[Freelancer]') : '';
   const firstName = user ? user.full_name.split(' ')[0] : '';
-  const showAIFeatures = user && user.user_type === 'job_seeker';
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation Bar */}
-      <nav className="bg-white dark:bg-gray-800 shadow-md transition-colors">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-primary dark:text-blue-400 cursor-pointer" onClick={() => navigate('/')}>
-              JobBoard
-            </h1>
-            <div className="flex gap-3 items-center">
-              <DarkModeToggle />
-
-              {/* Job Seeker Application Counter */}
-              {user && user.user_type === 'job_seeker' && (
-                <ApplicationCounter onUpgradeClick={() => setShowUpgradeModal(true)} />
-              )}
-
-              {user && <NotificationBell />}
-              {user ? (
-                <ProfileDropdown user={user} onLogout={logout} />
-              ) : (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => navigate('/login')}
-                    className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={() => navigate('/register')}
-                    className="px-3 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition"
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Navigation Bar */}
+      <Navbar />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white py-12 sm:py-20 transition-colors">
@@ -445,7 +414,7 @@ function Home() {
                     <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                       <p className="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-2">Why this job:</p>
                       <ul className="space-y-1">
-                        {matchReasons.map((reason, idx) => (
+                        {matchReasons.slice(0, 2).map((reason, idx) => (
                           <li key={idx} className="text-xs text-blue-700 dark:text-blue-400 flex items-start gap-2">
                             <span>✓</span>
                             <span>{reason}</span>
@@ -469,7 +438,16 @@ function Home() {
                 return (
                   <React.Fragment key={`group - ${job.id} `}>
                     {jobCard}
-                    <NativeAd onUpgradeClick={() => setShowUpgradeModal(true)} />
+                    {/* Native Ad triggers global modal via event or just redirects? For now assume it communicates status via Navbar context later if needed, or we keep local handler but modal is global? 
+                        The global Navbar handles the modal. The NativeAd button needs to trigger it. 
+                        Actually, NativeAd has a button. We might need a way to open the global modal from here. 
+                        For this refactor, let's keep it simple: The NativeAd button might need to broadcast an event or we export a context. 
+                        BUT, ApplicationCounter was the main request. NativeAd 'Upgrade' button can just navigate to a pricing page or we leave it for now.
+                        Let's check NativeAd props. It accepts onUpgradeClick.
+                        We can't easily open the modal in Navbar from here without Context.
+                        QUICK FIX: Dispatch a custom event 'open-upgrade-modal' that Navbar listens to. 
+                    */}
+                    <NativeAd onUpgradeClick={() => window.dispatchEvent(new Event('open-upgrade-modal'))} />
                   </React.Fragment>
                 );
               }
@@ -492,14 +470,7 @@ function Home() {
         )}
       </section>
 
-      {/* Premium Upgrade Modal */}
-      {user?.user_type === 'job_seeker' && (
-        <PremiumUpgradeModal
-          isOpen={showUpgradeModal}
-          onClose={() => setShowUpgradeModal(false)}
-          currentTier={isPremium ? 'premium' : 'free'}
-        />
-      )}
+      {/* Premium Upgrade Modal logic moved to Navbar */}
     </div>
   );
 }

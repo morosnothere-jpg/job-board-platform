@@ -65,7 +65,7 @@ function CreditPurchaseModal({ isOpen, onClose, currentBalance, isFirstPurchase 
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-green-500 to-blue-600 dark:from-green-700 dark:to-blue-800 text-white p-6 rounded-t-2xl">
+                <div className="bg-gradient-to-r from-green-500 to-blue-600 dark:from-green-700 dark:to-blue-800 text-white p-6 rounded-t-2xl">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-1 transition"
@@ -120,13 +120,13 @@ function CreditPurchaseModal({ isOpen, onClose, currentBalance, isFirstPurchase 
                                 <div
                                     key={pkg.id}
                                     className={`relative border-2 rounded-xl p-6 transition ${isPopular
-                                            ? 'border-blue-500 dark:border-blue-600 shadow-lg transform scale-105'
-                                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
+                                        ? 'border-blue-500 dark:border-blue-600 shadow-lg transform scale-105'
+                                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
                                         }`}
                                 >
                                     {isPopular && (
                                         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                                            <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                            <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-md">
                                                 ⭐ MOST POPULAR
                                             </span>
                                         </div>
@@ -178,8 +178,8 @@ function CreditPurchaseModal({ isOpen, onClose, currentBalance, isFirstPurchase 
                                         onClick={() => handlePurchase(pkg.id)}
                                         disabled={loading && selectedPackage === pkg.id}
                                         className={`w-full py-3 rounded-lg font-semibold transition ${isPopular
-                                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                                : 'bg-primary dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white'
+                                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                            : 'bg-primary dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white'
                                             } disabled:opacity-50`}
                                     >
                                         {loading && selectedPackage === pkg.id ? (

@@ -86,9 +86,7 @@ function NotificationBell() {
   };
 
   const handleDeleteAllNotifications = async () => {
-    if (!window.confirm('Are you sure you want to delete all notifications?')) {
-      return;
-    }
+
 
     try {
       await deleteAllNotifications();
