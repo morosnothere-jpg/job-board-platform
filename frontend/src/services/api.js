@@ -66,7 +66,6 @@ export const updateApplicationStatus = (id, statusData) =>
 
 // ============================================
 // MONETIZATION API ENDPOINTS
-// Add these to your existing api.js file
 // ============================================
 
 // ==========================================
@@ -77,22 +76,22 @@ export const updateApplicationStatus = (id, statusData) =>
  * Get available subscription plans
  */
 export const getSubscriptionPlans = () => {
-  return api.get('/api/monetization/subscription/plans');
+  return api.get('/monetization/subscription/plans');  // ✅ FIXED - removed /api
 };
 
 /**
  * Get current user's subscription status
  */
 export const getSubscriptionStatus = () => {
-  return api.get('/api/monetization/subscription/status');
+  return api.get('/monetization/subscription/status');  // ✅ FIXED
 };
 
 /**
  * Purchase a subscription plan
- * @param {number} planId - The ID of the plan to purchase
+ * @param {string} planId - The ID of the plan to purchase
  */
 export const purchaseSubscription = (planId) => {
-  return api.post('/api/monetization/subscription/purchase', { planId });
+  return api.post('/monetization/subscription/purchase', { planId });  // ✅ FIXED
 };
 
 // ==========================================
@@ -103,22 +102,22 @@ export const purchaseSubscription = (planId) => {
  * Get available credit packages
  */
 export const getCreditPackages = () => {
-  return api.get('/api/monetization/credits/packages');
+  return api.get('/monetization/credits/packages');  // ✅ FIXED
 };
 
 /**
  * Get current user's credit balance
  */
 export const getCreditBalance = () => {
-  return api.get('/api/monetization/credits/balance');
+  return api.get('/monetization/credits/balance');  // ✅ FIXED
 };
 
 /**
  * Purchase a credit package
- * @param {number} packageId - The ID of the package to purchase
+ * @param {string} packageId - The ID of the package to purchase
  */
 export const purchaseCredits = (packageId) => {
-  return api.post('/api/monetization/credits/purchase', { packageId });
+  return api.post('/monetization/credits/purchase', { packageId });  // ✅ FIXED
 };
 
 // ==========================================
@@ -127,10 +126,10 @@ export const purchaseCredits = (packageId) => {
 
 /**
  * Check payment status
- * @param {number} paymentId - The ID of the payment to check
+ * @param {string} paymentId - The ID of the payment to check
  */
 export const checkPaymentStatus = (paymentId) => {
-  return api.get(`/api/monetization/payment/${paymentId}/status`);
+  return api.get(`/monetization/payment/${paymentId}/status`);  // ✅ FIXED
 };
 
 // Admin APIs

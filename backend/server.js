@@ -90,10 +90,6 @@ app.use('/api/auth', authRoutes(supabase));
 
 // Job routes with posting rate limit
 const jobRouter = jobRoutes(supabase);
-// Apply rate limiter only to POST (job creation)
-app.post('/api/jobs', jobPostingLimiter, (req, res, next) => {
-  jobRouter(req, res, next);
-});
 app.use('/api/jobs', jobRouter);
 
 // Application routes with submission rate limit

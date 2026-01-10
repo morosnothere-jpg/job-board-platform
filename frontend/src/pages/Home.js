@@ -63,7 +63,7 @@ function Home() {
       checkSavedJobs(jobs);
     }
   }, [jobs, user]);
-  
+
   // Check subscription status
   useEffect(() => {
     if (user && user.user_type === 'job_seeker') {
@@ -149,7 +149,7 @@ function Home() {
       toast.error('Only job seekers can apply to jobs');
       return;
     }
-    navigate(`/ apply / ${ jobId } `);
+    navigate(`/apply/${jobId}`);
   };
 
   const handleSaveJob = async (e, jobId) => {
@@ -197,12 +197,12 @@ function Home() {
             </h1>
             <div className="flex gap-3 items-center">
               <DarkModeToggle />
-              
+
               {/* Job Seeker Application Counter */}
               {user && user.user_type === 'job_seeker' && (
                 <ApplicationCounter onUpgradeClick={() => setShowUpgradeModal(true)} />
               )}
-              
+
               {user && <NotificationBell />}
               {user ? (
                 <ProfileDropdown user={user} onLogout={logout} />
@@ -237,10 +237,10 @@ function Home() {
 
       {/* AI Profile Prompt */}
       {user && user.user_type === 'job_seeker' && !isPremium && !showAIFeatures && (
-         <section className="container mx-auto px-4 py-6">
-           <div className="bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-800 dark:to-pink-800 rounded-lg shadow-md p-6 text-white">
-             {/* Content same as before */}
-             <div className="flex items-start gap-4">
+        <section className="container mx-auto px-4 py-6">
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 dark:from-purple-800 dark:to-pink-800 rounded-lg shadow-md p-6 text-white">
+            {/* Content same as before */}
+            <div className="flex items-start gap-4">
               <span className="text-4xl">🤖</span>
               <div className="flex-1">
                 <h3 className="text-xl font-bold mb-2">Get AI-Powered Job Recommendations!</h3>
@@ -253,8 +253,8 @@ function Home() {
                 </button>
               </div>
             </div>
-           </div>
-         </section>
+          </div>
+        </section>
       )}
 
       {/* Search & Filters */}
@@ -262,27 +262,25 @@ function Home() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 mb-6 transition-colors">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100">Search & Filter Jobs</h2>
-            
+
             {/* Sort Toggle - Only show if AI features are enabled (setup pending for free users logic later maybe) */}
             {showAIFeatures && (
               <div className="flex gap-2">
                 <button
                   onClick={() => setSortBy('recommended')}
-                  className={`px - 3 py - 1.5 rounded - lg text - sm font - semibold transition ${
-  sortBy === 'recommended'
-  ? 'bg-primary dark:bg-blue-600 text-white'
-  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-} `}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${sortBy === 'recommended'
+                    ? 'bg-primary dark:bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    }`}
                 >
                   🤖 Recommended
                 </button>
                 <button
                   onClick={() => setSortBy('recent')}
-                  className={`px - 3 py - 1.5 rounded - lg text - sm font - semibold transition ${
-  sortBy === 'recent'
-  ? 'bg-primary dark:bg-blue-600 text-white'
-  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-} `}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${sortBy === 'recent'
+                    ? 'bg-primary dark:bg-blue-600 text-white'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                    }`}
                 >
                   🕒 Recent
                 </button>
@@ -408,7 +406,7 @@ function Home() {
 
                   {/* AI Match Badge */}
                   {showAIFeatures && matchScore > 0 && (
-                    <div className={`inline - flex items - center gap - 2 px - 3 py - 1 rounded - full text - xs font - bold mb - 3 ${ matchLevel.bgColor } ${ matchLevel.color } w - fit`}>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 ${matchLevel.bgColor} ${matchLevel.color} w-fit`}>
                       <span>{matchScore}%</span>
                       <span>{matchLevel.level} Match</span>
                     </div>
@@ -425,11 +423,10 @@ function Home() {
                       {job.job_type}
                     </span>
                     {job.work_mode && (
-                      <span className={`inline - block px - 3 py - 1 rounded - full text - sm w - fit ${
-  job.work_mode === 'remote' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' :
-  job.work_mode === 'hybrid' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300' :
-    'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
-} `}>
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm w-fit ${job.work_mode === 'remote' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300' :
+                        job.work_mode === 'hybrid' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300' :
+                          'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                        }`}>
                         {job.work_mode === 'remote' ? '🏠 Remote' :
                           job.work_mode === 'hybrid' ? '🔄 Hybrid' :
                             '🏢 On-site'}
@@ -470,7 +467,7 @@ function Home() {
               // Inject Native Ad after the 2nd item (index 1) for non-premium users
               if (index === 1 && user?.user_type === 'job_seeker' && !isPremium) {
                 return (
-                  <React.Fragment key={`group - ${ job.id } `}>
+                  <React.Fragment key={`group - ${job.id} `}>
                     {jobCard}
                     <NativeAd onUpgradeClick={() => setShowUpgradeModal(true)} />
                   </React.Fragment>
@@ -489,16 +486,16 @@ function Home() {
               disabled={loadingMore}
               className="px-8 py-3 bg-primary dark:bg-blue-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition font-semibold disabled:opacity-50"
             >
-              {loadingMore ? 'Loading...' : `Load More Jobs(${ currentPage } of ${ totalPages })`}
+              {loadingMore ? 'Loading...' : `Load More Jobs(${currentPage} of ${totalPages})`}
             </button>
           </div>
         )}
       </section>
-      
+
       {/* Premium Upgrade Modal */}
       {user?.user_type === 'job_seeker' && (
-        <PremiumUpgradeModal 
-          isOpen={showUpgradeModal} 
+        <PremiumUpgradeModal
+          isOpen={showUpgradeModal}
           onClose={() => setShowUpgradeModal(false)}
           currentTier={isPremium ? 'premium' : 'free'}
         />

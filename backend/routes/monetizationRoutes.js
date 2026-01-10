@@ -7,7 +7,6 @@ const router = express.Router();
 const pool = require('../config/database');
 const { authenticateToken: protect } = require('../middleware/auth');
 const paymobService = require('../utils/paymobService');
-
 // ==========================================
 // SUBSCRIPTION ROUTES (Job Seekers)
 // ==========================================
@@ -368,7 +367,7 @@ router.get('/payment/:id/status', protect, async (req, res) => {
  * POST /api/monetization/webhook/paymob
  * Handle Paymob payment callbacks
  */
-router.post('/webhook/paymob', express.json(), async (req, res) => {
+router.post('/webhook/paymob', async (req, res) => {
     try {
         const data = req.body;
 

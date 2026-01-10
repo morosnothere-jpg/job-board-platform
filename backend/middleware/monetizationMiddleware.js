@@ -10,7 +10,7 @@ const pool = require('../config/database');
 const checkCreditsForJobPost = async (req, res, next) => {
     try {
         // Only apply to recruiters
-        if (req.user.userType !== 'recruiter') {
+        if (req.user.user_type !== 'recruiter') {
             return next();
         }
 
@@ -95,7 +95,7 @@ const deductCreditsForJobPost = async (jobId, userId) => {
 const checkApplicationLimit = async (req, res, next) => {
     try {
         // Only apply to job seekers
-        if (req.user.userType !== 'job_seeker') {
+        if (req.user.user_type !== 'job_seeker') {
             return next();
         }
 
@@ -202,7 +202,7 @@ const incrementApplicationCount = async (userId) => {
  */
 const checkCandidateSearchAccess = async (req, res, next) => {
     try {
-        if (req.user.userType !== 'recruiter') {
+        if (req.user.user_type !== 'recruiter') {
             return res.status(403).json({
                 error: 'Only recruiters can search candidates'
             });
